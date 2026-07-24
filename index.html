@@ -121,15 +121,15 @@
         </div>
 
         <div style="margin-top:28px; display:flex; align-items:center; justify-content:center; gap:22px;">
-          <span onClick="{{ exportData }}" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent); cursor:pointer;">Exportar backup (.txt)</span>
-          <span onClick="{{ clearAll }}" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); cursor:pointer;">Zerar todos os dados</span>
+          <span onClick="{{ exportData }}" style="{{ btnLinkSmallAccent }}">Exportar backup (.txt)</span>
+          <span onClick="{{ clearAll }}" style="{{ btnDestructiveSmall }}">Zerar todos os dados</span>
         </div>
       </sc-if>
 
       <sc-if value="{{ isLancamentos }}" hint-placeholder-val="{{ false }}">
         <div>
           <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
-            <div onClick="{{ openImport }}" style="font-family:var(--font-mono); font-size:0.72rem; border-radius:999px; background:var(--accent-tint); color:var(--accent); padding:8px 14px; cursor:pointer;">+ Importar lista</div>
+            <div onClick="{{ openImport }}" style="{{ btnPillAdd }}">+ Importar lista</div>
           </div>
           <div style="display:flex; gap:6px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px;">
             <sc-for list="{{ personFilters }}" as="pf" hint-placeholder-count="4">
@@ -180,7 +180,7 @@
         <div>
           <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Contas fixas e parcelamentos · {{ viewMonthLabel }}</div>
           <sc-if value="{{ hasUnpaidContas }}" hint-placeholder-val="{{ false }}">
-            <div onClick="{{ markAllPaid }}" style-hover="opacity:0.85;" style="display:flex; align-items:center; justify-content:center; gap:6px; background:var(--success-tint); color:var(--success); padding:11px; border-radius:14px; margin-bottom:12px; font-family:var(--font-mono); font-size:0.78rem; cursor:pointer;">✓ Marcar todas como pagas ({{ unpaidContasLabel }})</div>
+            <div onClick="{{ markAllPaid }}" style-hover="opacity:0.85;" style="{{ btnSuccessFill }} margin-bottom:12px;">✓ Marcar todas como pagas ({{ unpaidContasLabel }})</div>
           </sc-if>
           <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);">
             <sc-for list="{{ contasList }}" as="c" hint-placeholder-count="5">
@@ -233,7 +233,7 @@
             <div style="background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); padding:20px; border-radius:18px;">
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div style="font-family:var(--font-display); font-weight:600; font-size:1.05rem;">{{ projDetailLabel }}</div>
-                <div onClick="{{ openProjEventForm }}" style="font-family:var(--font-mono); font-size:0.78rem; border-radius:999px; background:var(--accent-tint); color:var(--accent); padding:7px 12px; cursor:pointer;">+ evento</div>
+                <div onClick="{{ openProjEventForm }}" style="{{ btnPillAdd }}">+ evento</div>
               </div>
               <div style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;">Entradas {{ projDetailEntradasFmt }} · Saídas {{ projDetailSaidasFmt }}</div>
               <div style="margin-top:14px;">
@@ -267,15 +267,15 @@
           <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Importar lista</div>
-            <div onClick="{{ closeImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+            <div onClick="{{ closeImport }}" style="{{ btnLink }}">Fechar</div>
           </div>
           <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">Uma conta por linha, separada por ; — dia; descrição; valor; parcela (opcional).<br/>O dia pode ser só o número (dia do vencimento) ou uma data completa. Lança no mês em exibição.<br/>Ex.: 5; Aluguel; 2100 &nbsp;·&nbsp; 10; Celular; 210; 3/10</div>
           <textarea value="{{ importText }}" onChange="{{ onImportTextChange }}" placeholder="5; Aluguel; 2100
 10; Celular; 210; 3/10" style="width:100%; box-sizing:border-box; min-height:140px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem; font-family:var(--font-mono); margin-bottom:14px;"></textarea>
           <div style="display:flex; gap:10px;">
             <div style="flex:1;"></div>
-            <div onClick="{{ closeImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); border:1px solid var(--line-strong); border-radius:12px; padding:11px 18px; cursor:pointer;">Cancelar</div>
-            <div onClick="{{ processImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 20px; cursor:pointer;">Processar</div>
+            <div onClick="{{ closeImport }}" style="{{ btnSecondary }}">Cancelar</div>
+            <div onClick="{{ processImport }}" style="{{ btnPrimary }}">Processar</div>
           </div>
         </div>
       </div>
@@ -287,7 +287,7 @@
           <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Backup gerado</div>
-            <div onClick="{{ closeExport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+            <div onClick="{{ closeExport }}" style="{{ btnLink }}">Fechar</div>
           </div>
           <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">O arquivo .txt foi baixado. Você também pode copiar o texto abaixo e guardar onde preferir.</div>
           <textarea value="{{ exportText }}" readonly style="width:100%; box-sizing:border-box; min-height:220px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.76rem; font-family:var(--font-mono); line-height:1.5;"></textarea>
@@ -301,7 +301,7 @@
           <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
             <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Sincronizar com o parceiro</div>
-            <div onClick="{{ closeSync }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+            <div onClick="{{ closeSync }}" style="{{ btnLink }}">Fechar</div>
           </div>
           <div style="display:flex; align-items:center; gap:7px; margin-bottom:14px;"><span style="{{ syncDotStyle }}"></span><span style="font-size:0.8rem; color:{{ syncStatusColor }};">{{ syncStatusLabel }}</span></div>
 
@@ -327,10 +327,10 @@
 
           <div style="display:flex; gap:10px; align-items:center;">
             <sc-if value="{{ isSyncConnected }}" hint-placeholder-val="{{ false }}">
-              <div onClick="{{ disconnectSync }}" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;">Desconectar</div>
+              <div onClick="{{ disconnectSync }}" style="{{ btnDestructive }}">Desconectar</div>
             </sc-if>
             <div style="flex:1;"></div>
-            <div onClick="{{ connectSync }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 22px; cursor:pointer;">Conectar</div>
+            <div onClick="{{ connectSync }}" style="{{ btnPrimary }}">Conectar</div>
           </div>
         </div>
       </div>
@@ -342,7 +342,7 @@
           <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
             <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">{{ formTitle }}</div>
-            <div onClick="{{ closeForm }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+            <div onClick="{{ closeForm }}" style="{{ btnLink }}">Fechar</div>
           </div>
 
           <div style="display:flex; gap:4px; margin-bottom:16px; background:var(--surface-sunken); border-radius:14px; padding:4px;">
@@ -401,18 +401,18 @@
 
           <sc-if value="{{ showSplitDelete }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; gap:10px; margin-top:6px; margin-bottom:10px;">
-              <div onClick="{{ deleteOnlyMonth }}" style="flex:1; text-align:center; font-family:var(--font-mono); font-size:0.76rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:10px 8px; cursor:pointer;">Excluir só esse mês</div>
-              <div onClick="{{ deleteForward }}" style="flex:1; text-align:center; font-family:var(--font-mono); font-size:0.76rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:10px 8px; cursor:pointer;">Excluir esse mês em diante</div>
+              <div onClick="{{ deleteOnlyMonth }}" style="{{ btnDestructiveCompact }}">Excluir só esse mês</div>
+              <div onClick="{{ deleteForward }}" style="{{ btnDestructiveCompact }}">Excluir esse mês em diante</div>
             </div>
           </sc-if>
 
           <div style="display:flex; gap:10px; margin-top:6px;">
             <sc-if value="{{ showSimpleDelete }}" hint-placeholder-val="{{ false }}">
-              <div onClick="{{ deleteEntry }}" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;">Excluir</div>
+              <div onClick="{{ deleteEntry }}" style="{{ btnDestructive }}">Excluir</div>
             </sc-if>
             <div style="flex:1;"></div>
-            <div onClick="{{ closeForm }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); border:1px solid var(--line-strong); border-radius:12px; padding:11px 18px; cursor:pointer;">Cancelar</div>
-            <div onClick="{{ saveEntry }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 20px; cursor:pointer;">Salvar</div>
+            <div onClick="{{ closeForm }}" style="{{ btnSecondary }}">Cancelar</div>
+            <div onClick="{{ saveEntry }}" style="{{ btnPrimary }}">Salvar</div>
           </div>
         </div>
       </div>
@@ -426,6 +426,20 @@ const CAT_META = {
   fixa: { label: 'Fixa', color: 'var(--accent)', bg: 'var(--accent-tint)' },
   variavel: { label: 'Variável', color: 'var(--brass)', bg: 'var(--brass-tint)' },
   parcelamento: { label: 'Parcelada', color: '#5B6B66', bg: 'rgba(91,107,102,0.14)' },
+};
+
+// Estilos de botão padronizados por função (não por tela), pra todo botão
+// do mesmo tipo de ação ter sempre a mesma cara em qualquer lugar do app.
+const BTN = {
+  primary: 'font-family:var(--font-mono); font-size:0.85rem; text-align:center; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 20px; cursor:pointer;',
+  secondary: 'font-family:var(--font-mono); font-size:0.85rem; text-align:center; color:var(--text-muted); border:1px solid var(--line-strong); border-radius:12px; padding:11px 18px; cursor:pointer;',
+  destructive: 'font-family:var(--font-mono); font-size:0.82rem; text-align:center; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;',
+  destructiveCompact: 'flex:1; font-family:var(--font-mono); font-size:0.76rem; text-align:center; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:10px 8px; cursor:pointer;',
+  destructiveSmall: 'font-family:var(--font-mono); font-size:0.72rem; color:var(--critical); border:1px solid var(--critical); border-radius:999px; padding:6px 14px; cursor:pointer;',
+  successFill: 'display:flex; align-items:center; justify-content:center; gap:6px; font-family:var(--font-mono); font-size:0.78rem; color:var(--success); background:var(--success-tint); border-radius:14px; padding:11px; cursor:pointer;',
+  pillAdd: 'font-family:var(--font-mono); font-size:0.74rem; color:var(--accent); background:var(--accent-tint); border-radius:999px; padding:8px 14px; cursor:pointer;',
+  link: 'font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;',
+  linkSmallAccent: 'font-family:var(--font-mono); font-size:0.72rem; color:var(--accent); cursor:pointer;',
 };
 
 function monthIdxFn(key) {
@@ -775,6 +789,12 @@ class Component extends DCLogic {
   // 'only' (apaga só o mês em que a edição foi aberta) ou
   // 'forward' (apaga esse mês e os seguintes, mantendo os anteriores).
   deleteEntry(scope) {
+    const msg = scope === 'only'
+      ? 'Excluir este lançamento só neste mês? Os outros meses continuam.'
+      : scope === 'forward'
+        ? 'Excluir este lançamento deste mês em diante? Os meses anteriores continuam.'
+        : 'Excluir este lançamento? Essa ação não pode ser desfeita.';
+    if (typeof confirm === 'function' && !confirm(msg)) return;
     this.setState(s => {
       const original = s.entries.find(e => e.id === s.editingId);
       const refMonth = s.draft ? s.draft.month : null;
@@ -1096,6 +1116,10 @@ class Component extends DCLogic {
       : 'width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem;';
 
     return {
+      btnPrimary: BTN.primary, btnSecondary: BTN.secondary,
+      btnDestructive: BTN.destructive, btnDestructiveCompact: BTN.destructiveCompact, btnDestructiveSmall: BTN.destructiveSmall,
+      btnSuccessFill: BTN.successFill, btnPillAdd: BTN.pillAdd,
+      btnLink: BTN.link, btnLinkSmallAccent: BTN.linkSmallAccent,
       showMonthSwitcher: s.tab !== 'projecao',
       viewMonthLabel: this.monthLabel(s.viewMonth),
       tabs, tabsLeft: tabs.slice(0, 2), tabsRight: tabs.slice(2),
