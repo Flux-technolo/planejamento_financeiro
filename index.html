@@ -474,7 +474,8 @@ class Component extends DCLogic {
   }
 
   state = (() => {
-    const cur = '2026-07';
+    const today = new Date();
+    const cur = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     let entries = [];
     try {
       const saved = JSON.parse(localStorage.getItem('pf_entries_v1') || 'null');
