@@ -459,7 +459,7 @@ class Component extends DCLogic {
   isActive(e, key) {
     const k = this.monthIdx(key), s = this.monthIdx(e.month);
     if (e.category === 'parcelamento') return k >= s && k < s + (Number(e.installments) || 1);
-    if (e.recurring) return k >= s;
+    if (e.recurring) return k >= s && (!e.until || k < this.monthIdx(e.until));
     return e.month === key;
   }
   parcelaAtual(e, key) {
@@ -554,20 +554,26 @@ class Component extends DCLogic {
       this._channel = this._client.channel('couple-' + cfg.code)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'couples', filter: 'code=eq.' + cfg.code }, payload => {
           const d = payload && payload.new && payload.new.data;
-          if (d) { this._lastRemoteJson = JSON.stringify(d); this.setState({ entries: d }); }
+          // Se ainda temos uma mudança local aguardando ser enviada, ignoramos
+          // esse evento — aplicá-lo agora sobrescreveria o clique recente do
+          // usuário antes dele chegar ao servidor. Nosso próprio envio, ao
+          // completar, vai gerar um novo evento com os dados corretos.
+          if (d && !this._pendingPush) { this._lastRemoteJson = JSON.stringify(d); this.setState({ entries: d }); }
         })
         .subscribe();
       this.setState({ syncStatus: 'online' });
     } catch (e) { this.setState({ syncStatus: 'error' }); }
   }
   _schedulePush() {
+    this._pendingPush = true;
     clearTimeout(this._pushTimer);
     this._pushTimer = setTimeout(async () => {
-      if (!this._client || !this.state.sync) return;
+      if (!this._client || !this.state.sync) { this._pendingPush = false; return; }
       try {
         await this._client.from('couples').upsert({ code: this.state.sync.code, data: this.state.entries, updated_at: new Date().toISOString() });
         this._lastRemoteJson = JSON.stringify(this.state.entries);
       } catch (e) {}
+      this._pendingPush = false;
     }, 600);
   }
   disconnectSync() {
@@ -624,7 +630,9 @@ class Component extends DCLogic {
     const s = this.state;
     const ref = ctxMonth || s.viewMonth;
     const isParc = entry.category === 'parcelamento';
-    const refMonth = isParc ? ref : entry.month;
+    // Recorrentes usam o mês em que a edição foi aberta (não o mês original de
+    // criação), para saber a partir de onde a alteração deve valer.
+    const refMonth = ref;
     const parcelaAtual = isParc ? this.parcelaAtual(entry, ref) : 1;
     this.setState({
       formOpen: true, editingId: entry.id,
@@ -696,6 +704,21 @@ class Component extends DCLogic {
     };
     this.setState(s => {
       if (s.editingId) {
+        const original = s.entries.find(e => e.id === s.editingId);
+        // Editar uma recorrente a partir de um mês diferente do mês original
+        // não deve reescrever meses passados: encerramos o registro antigo
+        // nesse ponto e criamos um novo a partir do mês editado em diante.
+        if (original && original.category !== 'parcelamento' && original.recurring && original.month !== month) {
+          const splitIdx = this.monthIdx(month);
+          const entries = s.entries.flatMap(e => {
+            if (e.id !== s.editingId) return [e];
+            return [
+              { ...e, until: month, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) },
+              { ...payload, id: 'e' + Date.now() + '_split', paidMonths: e.paidMonths.filter(m => this.monthIdx(m) >= splitIdx) },
+            ];
+          });
+          return { entries, formOpen: false, draft: null, editingId: null };
+        }
         return { entries: s.entries.map(e => e.id === s.editingId ? { ...e, ...payload } : e), formOpen: false, draft: null, editingId: null };
       }
       const id = 'e' + Date.now();

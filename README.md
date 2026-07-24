@@ -5,9 +5,10 @@ Aplicativo de controle financeiro mensal para casais, em português (pt-BR), com
 ## Arquivos
 
 - **`Planejamento Financeiro.dc.html`** — arquivo principal (edite este). Contém toda a interface, lógica e persistência.
-- **`App Financeiro (standalone).html`** — versão única e autossuficiente, pronta para hospedar/compartilhar. Gerada a partir do arquivo principal. Não editar direto: reexporte quando o principal mudar.
+- **`index.html`** — cópia do arquivo principal, é o que fica publicado (Vercel serve este como raiz do site). Depois de editar o arquivo principal, copie o conteúdo para cá antes de publicar.
 - **`support.js`** — runtime do componente (gerado automaticamente, não editar).
 - **`_ds/`** — NOW Labs Design System (tokens e componentes).
+- **`App Financeiro (standalone).html`** — versão antiga, gerada por uma ferramenta de bundling do Claude Design que não está mais em uso neste fluxo. Mantido só como referência; não editar nem publicar a partir dele.
 
 ## Funcionalidades
 
@@ -66,10 +67,11 @@ Quem conecta primeiro envia os lançamentos atuais; o outro os recebe. Depois di
 
 ## Como publicar
 
-Hospede o **`App Financeiro (standalone).html`** em qualquer host estático grátis:
+O repositório está conectado ao **Vercel**, que republica automaticamente a cada `git push` na branch `main` — ele serve o `index.html` da raiz. Para atualizar o app:
 
-- **Netlify Drop** — [app.netlify.com/drop](https://app.netlify.com/drop), arraste o arquivo.
-- **GitHub Pages** ou **Vercel**.
+1. Edite `Planejamento Financeiro.dc.html`.
+2. Copie o conteúdo atualizado para `index.html`.
+3. Commit e push — o Vercel builda e publica sozinho em ~30s.
 
 Depois abra o link no celular e use "Adicionar à tela de início" para virar um ícone de app.
 
