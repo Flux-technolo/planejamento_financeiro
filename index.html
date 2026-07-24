@@ -142,7 +142,7 @@
               <div onClick="{{ e.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
                 <div style="flex:1; min-width:0;">
                   <div style="font-size:0.88rem;">{{ e.desc }}</div>
-                  <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ e.personLabel }}{{ e.tagSuffix }} · <span onClick="{{ e.onClone }}" style="color:var(--accent); cursor:pointer;">clonar p/ próximo mês</span></div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ e.personLabel }}{{ e.tagSuffix }}<sc-if value="{{ e.showClone }}" hint-placeholder-val="{{ true }}"> · <span onClick="{{ e.onClone }}" style="color:var(--accent); cursor:pointer;">clonar p/ próximo mês</span></sc-if></div>
                 </div>
                 <div style="font-family:var(--font-mono); font-size:0.9rem; color:var(--success); font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">+{{ e.amountFmt }}</div>
               </div>
@@ -161,7 +161,9 @@
                   <div style="display:flex; align-items:center; gap:8px; margin-top:5px; flex-wrap:wrap;">
                     <span style="font-family:var(--font-mono); font-size:0.64rem; padding:3px 9px; border-radius:999px; background:{{ s.catBg }}; color:{{ s.catColor }}; white-space:nowrap;">{{ s.catLabel }}</span>
                     <span style="font-size:0.72rem; color:var(--text-muted);">{{ s.personLabel }}{{ s.tagSuffix }}</span>
-                    <span onClick="{{ s.onClone }}" style="font-size:0.72rem; color:var(--accent); cursor:pointer;">clonar</span>
+                    <sc-if value="{{ s.showClone }}" hint-placeholder-val="{{ true }}">
+                      <span onClick="{{ s.onClone }}" style="font-size:0.72rem; color:var(--accent); cursor:pointer;">clonar</span>
+                    </sc-if>
                   </div>
                 </div>
                 <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">-{{ s.amountFmt }}</div>
@@ -194,10 +196,7 @@
                 </div>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
                   <span style="font-family:var(--font-mono); font-size:0.64rem; padding:4px 10px; border-radius:999px; background:{{ c.statusBg }}; color:{{ c.statusColor }};">{{ c.statusLabel }}</span>
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <div onClick="{{ c.onClone }}" style="font-size:0.76rem; color:var(--accent); cursor:pointer;">Clonar p/ próximo mês</div>
-                    <div onClick="{{ c.onTogglePaid }}" style="font-size:0.76rem; color:var(--accent); cursor:pointer; font-weight:500;">{{ c.toggleLabel }}</div>
-                  </div>
+                  <div onClick="{{ c.onTogglePaid }}" style="font-size:0.76rem; color:var(--accent); cursor:pointer; font-weight:500;">{{ c.toggleLabel }}</div>
                 </div>
               </div>
             </sc-for>
@@ -397,8 +396,15 @@
             <div style="font-size:0.78rem; color:var(--text-muted); margin:10px 0 14px;">Classificação automática: <span style="color:{{ previewCatColor }}; font-family:var(--font-mono);">{{ previewCatLabel }}</span></div>
           </sc-if>
 
+          <sc-if value="{{ showSplitDelete }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:10px; margin-top:6px; margin-bottom:10px;">
+              <div onClick="{{ deleteOnlyMonth }}" style="flex:1; text-align:center; font-family:var(--font-mono); font-size:0.76rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:10px 8px; cursor:pointer;">Excluir só esse mês</div>
+              <div onClick="{{ deleteForward }}" style="flex:1; text-align:center; font-family:var(--font-mono); font-size:0.76rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:10px 8px; cursor:pointer;">Excluir esse mês em diante</div>
+            </div>
+          </sc-if>
+
           <div style="display:flex; gap:10px; margin-top:6px;">
-            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ showSimpleDelete }}" hint-placeholder-val="{{ false }}">
               <div onClick="{{ deleteEntry }}" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;">Excluir</div>
             </sc-if>
             <div style="flex:1;"></div>
@@ -457,6 +463,7 @@ class Component extends DCLogic {
     return 'variavel';
   }
   isActive(e, key) {
+    if (e.excludedMonths && e.excludedMonths.includes(key)) return false;
     const k = this.monthIdx(key), s = this.monthIdx(e.month);
     if (e.category === 'parcelamento') return k >= s && k < s + (Number(e.installments) || 1);
     if (e.recurring) return k >= s && (!e.until || k < this.monthIdx(e.until));
@@ -755,27 +762,46 @@ class Component extends DCLogic {
       return { entries: [...s.entries, { id, ...payload, paidMonths: [] }], formOpen: false, draft: null, editingId: null };
     });
   }
-  deleteEntry() {
+  // scope: undefined (exclusão simples, sem recorrência/parcelamento),
+  // 'only' (apaga só o mês em que a edição foi aberta) ou
+  // 'forward' (apaga esse mês e os seguintes, mantendo os anteriores).
+  deleteEntry(scope) {
     this.setState(s => {
       const original = s.entries.find(e => e.id === s.editingId);
       const refMonth = s.draft ? s.draft.month : null;
-      // Excluir uma recorrente/parcelamento a partir de um mês diferente do
-      // original só remove dali em diante — meses passados continuam
-      // registrados. Para apagar tudo, abra a edição a partir do mês
-      // original do lançamento.
-      if (original && refMonth && original.month !== refMonth) {
-        const splitIdx = this.monthIdx(refMonth);
-        if (original.category !== 'parcelamento' && original.recurring) {
-          const entries = s.entries.map(e => e.id !== s.editingId ? e : { ...e, until: refMonth, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) });
-          return { entries, formOpen: false, draft: null, editingId: null };
-        }
-        if (original.category === 'parcelamento') {
-          const origStartIdx = this.monthIdx(original.month);
-          const consumed = Math.min(Math.max(splitIdx - origStartIdx, 1), original.installments);
-          const entries = s.entries.map(e => e.id !== s.editingId ? e : { ...e, installments: consumed, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) });
-          return { entries, formOpen: false, draft: null, editingId: null };
-        }
+      const isRecurring = !!original && original.category !== 'parcelamento' && original.recurring;
+      const isParcelamento = !!original && original.category === 'parcelamento';
+
+      if (original && refMonth && scope === 'only' && (isRecurring || isParcelamento)) {
+        const entries = s.entries.map(e => e.id !== s.editingId ? e : { ...e, excludedMonths: [...(e.excludedMonths || []), refMonth] });
+        return { entries, formOpen: false, draft: null, editingId: null };
       }
+
+      if (original && refMonth && scope === 'forward' && (isRecurring || isParcelamento) && original.month !== refMonth) {
+        const splitIdx = this.monthIdx(refMonth);
+        if (isRecurring) {
+          const entries = s.entries.map(e => e.id !== s.editingId ? e : {
+            ...e, until: refMonth,
+            paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx),
+            excludedMonths: (e.excludedMonths || []).filter(m => this.monthIdx(m) < splitIdx),
+          });
+          return { entries, formOpen: false, draft: null, editingId: null };
+        }
+        const origStartIdx = this.monthIdx(original.month);
+        const consumed = Math.max(splitIdx - origStartIdx, 0);
+        if (consumed <= 0) {
+          return { entries: s.entries.filter(e => e.id !== s.editingId), formOpen: false, draft: null, editingId: null };
+        }
+        const entries = s.entries.map(e => e.id !== s.editingId ? e : {
+          ...e, installments: Math.min(consumed, e.installments),
+          paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx),
+          excludedMonths: (e.excludedMonths || []).filter(m => this.monthIdx(m) < splitIdx),
+        });
+        return { entries, formOpen: false, draft: null, editingId: null };
+      }
+
+      // Exclusão simples (sem recorrência/parcelamento), ou "em diante" a
+      // partir do próprio mês original: remove o registro inteiro.
       return { entries: s.entries.filter(e => e.id !== s.editingId), formOpen: false, draft: null, editingId: null };
     });
   }
@@ -970,6 +996,9 @@ class Component extends DCLogic {
       id: e.id, desc: e.desc, personLabel: this.personLabel(e.person),
       tagSuffix: (e.recurring ? ' · recorrente' : '') + (e.dueDay ? ` · dia ${e.dueDay}` : ''),
       amountFmt: this.fmt(e.amount), onEdit: () => this.openEdit(e),
+      // Entradas/saídas recorrentes ou parceladas já continuam sozinhas nos
+      // meses seguintes; clonar duplicaria esse valor todo mês em diante.
+      showClone: !e.recurring,
       onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
     }));
     const saidasList = entries.filter(e => e.type === 'saida' && this.isActive(e, s.viewMonth) && (pf === 'all' || e.person === pf)).map(e => {
@@ -979,6 +1008,7 @@ class Component extends DCLogic {
         id: e.id, desc: e.desc, personLabel: this.personLabel(e.person), tagSuffix: parcela,
         catLabel: meta.label, catColor: meta.color, catBg: meta.bg,
         amountFmt: this.fmt(e.amount), onEdit: () => this.openEdit(e),
+        showClone: !e.recurring && e.category !== 'parcelamento',
         onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
       };
     });
@@ -997,7 +1027,6 @@ class Component extends DCLogic {
         toggleLabel: paid ? 'Desmarcar' : 'Marcar como paga',
         onTogglePaid: () => this.togglePaid(e.id, s.viewMonth),
         onEdit: () => this.openEdit(e),
-        onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
       };
     });
 
@@ -1037,6 +1066,10 @@ class Component extends DCLogic {
     const d = s.draft || {};
     const previewCat = this.classify(d);
     const previewMeta = CAT_META[previewCat] || CAT_META.variavel;
+    const editingOriginal = isEditing ? s.entries.find(e => e.id === s.editingId) : null;
+    const editingIsSplittable = !!editingOriginal && (editingOriginal.category === 'parcelamento' || (editingOriginal.category !== 'parcelamento' && editingOriginal.recurring));
+    const showSimpleDelete = isEditing && !editingIsSplittable;
+    const showSplitDelete = isEditing && editingIsSplittable;
 
     return {
       showMonthSwitcher: s.tab !== 'projecao',
@@ -1082,7 +1115,7 @@ class Component extends DCLogic {
 
       formOpen: s.formOpen,
       formTitle: isEditing ? 'Editar lançamento' : 'Novo lançamento',
-      isEditing,
+      isEditing, showSimpleDelete, showSplitDelete,
       closeForm: () => this.closeForm(),
       setTypeEntrada: () => this.setTypeEntrada(), setTypeSaida: () => this.setTypeSaida(),
       typeEntradaStyle: `flex:1; text-align:center; padding:9px; border-radius:10px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer; transition:background 0.15s; background:${d.type === 'entrada' ? 'var(--success-tint)' : 'transparent'}; color:${d.type === 'entrada' ? 'var(--success)' : 'var(--text-muted)'};`,
@@ -1097,10 +1130,13 @@ class Component extends DCLogic {
       checkboxStyle: `width:18px; height:18px; border-radius:6px; border:1px solid var(--line-strong); background:${d.recurring ? 'var(--accent)' : 'transparent'}; transition:background 0.15s;`,
       draftInstallments: d.installments, onInstallmentsChange: ev => this.updateDraft('installments', ev.target.value),
       showParcelaAtual: Number(d.installments) > 1,
-      draftParcelaAtual: d.parcelaAtual || 1, onParcelaAtualChange: ev => this.updateDraft('parcelaAtual', ev.target.value),
+      draftParcelaAtual: d.parcelaAtual, onParcelaAtualChange: ev => this.updateDraft('parcelaAtual', ev.target.value),
       draftDueDay: d.dueDay, onDueDayChange: ev => this.updateDraft('dueDay', ev.target.value),
       previewCatLabel: previewMeta.label, previewCatColor: previewMeta.color,
-      saveEntry: () => this.saveEntry(), deleteEntry: () => this.deleteEntry(),
+      saveEntry: () => this.saveEntry(),
+      deleteEntry: () => this.deleteEntry(),
+      deleteOnlyMonth: () => this.deleteEntry('only'),
+      deleteForward: () => this.deleteEntry('forward'),
       clearAll: () => this.clearAll(),
 
       importOpen: s.importOpen, importText: s.importText,
