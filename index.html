@@ -703,6 +703,7 @@ class Component extends DCLogic {
     const d = this.state.draft;
     const category = this.classify(d);
     const installments = Math.max(1, Number(d.installments) || 1);
+    const refMonth = d.month; // mês em que a edição foi aberta/feita
     let month = d.month;
     if (category === 'parcelamento') {
       const atual = Math.min(Math.max(Number(d.parcelaAtual) || 1, 1), installments);
@@ -730,6 +731,24 @@ class Component extends DCLogic {
           });
           return { entries, formOpen: false, draft: null, editingId: null };
         }
+        // Mesma ideia para parcelamentos: editar o valor a partir de uma
+        // parcela futura não deve mudar o valor das parcelas já passadas.
+        // Encerramos o registro antigo com as parcelas já decorridas e
+        // criamos um novo com o valor editado para as parcelas restantes.
+        if (original && original.category === 'parcelamento' && category === 'parcelamento' && original.month !== refMonth) {
+          const splitIdx = this.monthIdx(refMonth);
+          const origStartIdx = this.monthIdx(original.month);
+          const consumed = Math.min(Math.max(splitIdx - origStartIdx, 1), original.installments);
+          const remaining = Math.max(original.installments - consumed, 1);
+          const entries = s.entries.flatMap(e => {
+            if (e.id !== s.editingId) return [e];
+            return [
+              { ...e, installments: consumed, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) },
+              { ...payload, id: 'e' + Date.now() + '_split', month: refMonth, installments: remaining, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) >= splitIdx) },
+            ];
+          });
+          return { entries, formOpen: false, draft: null, editingId: null };
+        }
         return { entries: s.entries.map(e => e.id === s.editingId ? { ...e, ...payload } : e), formOpen: false, draft: null, editingId: null };
       }
       const id = 'e' + Date.now();
@@ -737,7 +756,28 @@ class Component extends DCLogic {
     });
   }
   deleteEntry() {
-    this.setState(s => ({ entries: s.entries.filter(e => e.id !== s.editingId), formOpen: false, draft: null, editingId: null }));
+    this.setState(s => {
+      const original = s.entries.find(e => e.id === s.editingId);
+      const refMonth = s.draft ? s.draft.month : null;
+      // Excluir uma recorrente/parcelamento a partir de um mês diferente do
+      // original só remove dali em diante — meses passados continuam
+      // registrados. Para apagar tudo, abra a edição a partir do mês
+      // original do lançamento.
+      if (original && refMonth && original.month !== refMonth) {
+        const splitIdx = this.monthIdx(refMonth);
+        if (original.category !== 'parcelamento' && original.recurring) {
+          const entries = s.entries.map(e => e.id !== s.editingId ? e : { ...e, until: refMonth, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) });
+          return { entries, formOpen: false, draft: null, editingId: null };
+        }
+        if (original.category === 'parcelamento') {
+          const origStartIdx = this.monthIdx(original.month);
+          const consumed = Math.min(Math.max(splitIdx - origStartIdx, 1), original.installments);
+          const entries = s.entries.map(e => e.id !== s.editingId ? e : { ...e, installments: consumed, paidMonths: e.paidMonths.filter(m => this.monthIdx(m) < splitIdx) });
+          return { entries, formOpen: false, draft: null, editingId: null };
+        }
+      }
+      return { entries: s.entries.filter(e => e.id !== s.editingId), formOpen: false, draft: null, editingId: null };
+    });
   }
   togglePaid(id, monthKey) {
     this.setState(s => ({
