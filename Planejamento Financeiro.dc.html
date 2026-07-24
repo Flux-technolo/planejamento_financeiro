@@ -70,7 +70,7 @@
                 <div onClick="{{ c.onToggle }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer;">
                   <span style="width:9px; height:9px; border-radius:50%; background:{{ c.color }}; flex-shrink:0;"></span>
                   <span style="font-size:0.85rem; flex:1;">{{ c.label }}</span>
-                  <span style="font-family:var(--font-mono); font-size:0.85rem; font-variant-numeric:tabular-nums;">{{ c.amountFmt }}</span>
+                  <span style="font-family:var(--font-mono); font-size:0.85rem; font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">{{ c.amountFmt }}</span>
                   <span style="font-family:var(--font-mono); font-size:0.95rem; color:var(--text-muted); width:14px; text-align:center;">{{ c.caret }}</span>
                 </div>
                 <div style="{{ c.itemsStyle }}">
@@ -109,7 +109,7 @@
                     <div style="font-size:0.88rem;">{{ b.desc }}</div>
                     <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">{{ b.dueLabel }} · {{ b.personLabel }}</div>
                   </div>
-                  <div style="font-family:var(--font-mono); font-size:0.88rem; font-variant-numeric:tabular-nums;">{{ b.amountFmt }}</div>
+                  <div style="font-family:var(--font-mono); font-size:0.88rem; font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">{{ b.amountFmt }}</div>
                   <div onClick="{{ b.onTogglePaid }}" style="font-family:var(--font-mono); font-size:0.64rem; border-radius:999px; background:var(--success-tint); color:var(--success); padding:6px 10px; cursor:pointer; white-space:nowrap;">Marcar paga</div>
                 </div>
               </sc-for>
@@ -139,12 +139,12 @@
           <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Entradas</div>
           <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); margin-bottom:22px;">
             <sc-for list="{{ entradasList }}" as="e" hint-placeholder-count="2">
-              <div onClick="{{ e.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
-                <div>
+              <div onClick="{{ e.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
+                <div style="flex:1; min-width:0;">
                   <div style="font-size:0.88rem;">{{ e.desc }}</div>
                   <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ e.personLabel }}{{ e.tagSuffix }} · <span onClick="{{ e.onClone }}" style="color:var(--accent); cursor:pointer;">clonar p/ próximo mês</span></div>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:0.9rem; color:var(--success); font-variant-numeric:tabular-nums;">+{{ e.amountFmt }}</div>
+                <div style="font-family:var(--font-mono); font-size:0.9rem; color:var(--success); font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">+{{ e.amountFmt }}</div>
               </div>
             </sc-for>
             <sc-if value="{{ entradasEmpty }}" hint-placeholder-val="{{ false }}">
@@ -155,16 +155,16 @@
           <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Saídas</div>
           <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);">
             <sc-for list="{{ saidasList }}" as="s" hint-placeholder-count="4">
-              <div onClick="{{ s.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
-                <div>
+              <div onClick="{{ s.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
+                <div style="flex:1; min-width:0;">
                   <div style="font-size:0.88rem;">{{ s.desc }}</div>
-                  <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
-                    <span style="font-family:var(--font-mono); font-size:0.64rem; padding:3px 9px; border-radius:999px; background:{{ s.catBg }}; color:{{ s.catColor }};">{{ s.catLabel }}</span>
+                  <div style="display:flex; align-items:center; gap:8px; margin-top:5px; flex-wrap:wrap;">
+                    <span style="font-family:var(--font-mono); font-size:0.64rem; padding:3px 9px; border-radius:999px; background:{{ s.catBg }}; color:{{ s.catColor }}; white-space:nowrap;">{{ s.catLabel }}</span>
                     <span style="font-size:0.72rem; color:var(--text-muted);">{{ s.personLabel }}{{ s.tagSuffix }}</span>
                     <span onClick="{{ s.onClone }}" style="font-size:0.72rem; color:var(--accent); cursor:pointer;">clonar</span>
                   </div>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums;">-{{ s.amountFmt }}</div>
+                <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums; flex-shrink:0; white-space:nowrap;">-{{ s.amountFmt }}</div>
               </div>
             </sc-for>
             <sc-if value="{{ saidasEmpty }}" hint-placeholder-val="{{ false }}">
@@ -188,7 +188,7 @@
                     <div style="font-size:0.9rem;">{{ c.desc }}</div>
                     <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ c.personLabel }} · {{ c.dueLabel }}{{ c.parcelaSuffix }}</div>
                   </div>
-                  <div style="text-align:right;">
+                  <div style="text-align:right; flex-shrink:0; white-space:nowrap;">
                     <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums;">{{ c.amountFmt }}</div>
                   </div>
                 </div>
