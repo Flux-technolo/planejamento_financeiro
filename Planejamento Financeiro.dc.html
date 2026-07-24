@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/now-labs-design-system-869e7353-e577-41aa-ad65-5e416a7b809b/tokens.css">
+  <script src="_ds/now-labs-design-system-869e7353-e577-41aa-ad65-5e416a7b809b/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--bg); }
+    input, select { font-family: var(--font-body); }
+    ::placeholder { color: var(--text-muted); opacity: 0.7; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</helmet>
+
+<template id="__bundler_thumbnail">
+  <div style="width:100%; height:100%; background:#1f6f54; display:flex; align-items:center; justify-content:center;">
+    <div style="width:40%; height:40%; color:#fff; font-family:sans-serif; font-weight:700; font-size:120px; display:flex; align-items:center; justify-content:center;">R$</div>
+  </div>
+</template>
+
+<div style="min-height:100vh; background:var(--bg); display:flex; justify-content:center;">
+  <div style="width:100%; max-width:430px; height:100vh; background:var(--bg); color:var(--text); font-family:var(--font-body); display:flex; flex-direction:column; position:relative; overflow:hidden;">
+
+    <div style="padding:22px 20px 14px; background:var(--bg); flex-shrink:0;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent);">Planejamento do casal</div>
+          <div style="font-family:var(--font-display); font-weight:600; font-size:1.45rem; margin-top:3px;">Finanças do mês</div>
+        </div>
+        <div onClick="{{ openSync }}" style-hover="opacity:0.85;" style="{{ syncPillStyle }}"><span style="{{ syncDotStyle }}"></span>{{ syncPillLabel }}</div>
+      </div>
+
+      <sc-if value="{{ showMonthSwitcher }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:16px; background:var(--surface); border-radius:16px; padding:6px; box-shadow:var(--shadow);">
+          <div onClick="{{ prevMonth }}" style-hover="background:var(--accent-tint); color:var(--accent);" style="{{ prevMonthStyle }}">‹</div>
+          <div style="font-family:var(--font-display); font-weight:600; font-size:0.98rem;">{{ viewMonthLabel }}</div>
+          <div onClick="{{ nextMonth }}" style-hover="background:var(--accent-tint); color:var(--accent);" style="width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1rem; cursor:pointer; color:var(--text-muted); transition:background 0.15s;">›</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ !showMonthSwitcher }}" hint-placeholder-val="{{ false }}">
+        <div style="height:2px;"></div>
+      </sc-if>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; overflow-x:hidden; padding:16px 20px 24px;">
+
+      <sc-if value="{{ isResumo }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); padding:24px; border-radius:20px;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted);">Saldo previsto · {{ viewMonthLabel }}</div>
+          <div style="font-family:var(--font-display); font-weight:600; font-size:2.2rem; letter-spacing:-0.01em; margin-top:6px; color:{{ saldoColor }};">{{ saldoFmt }}</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; font-variant-numeric:tabular-nums;">Entradas {{ entradasFmt }} · Saídas {{ saidasFmt }}</div>
+        </div>
+
+        <div style="margin-top:22px;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Composição das saídas</div>
+          <div style="height:34px; display:flex; overflow:hidden; border-radius:12px; margin-bottom:14px;">
+            <sc-for list="{{ catSegments }}" as="seg" hint-placeholder-count="3">
+              <div style="width:{{ seg.width }}; background:{{ seg.color }}; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.65rem; color:#fff; overflow:hidden;">{{ seg.tag }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ catList }}" as="c" hint-placeholder-count="3">
+              <div style="background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden;">
+                <div onClick="{{ c.onToggle }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer;">
+                  <span style="width:9px; height:9px; border-radius:50%; background:{{ c.color }}; flex-shrink:0;"></span>
+                  <span style="font-size:0.85rem; flex:1;">{{ c.label }}</span>
+                  <span style="font-family:var(--font-mono); font-size:0.85rem; font-variant-numeric:tabular-nums;">{{ c.amountFmt }}</span>
+                  <span style="font-family:var(--font-mono); font-size:0.95rem; color:var(--text-muted); width:14px; text-align:center;">{{ c.caret }}</span>
+                </div>
+                <div style="{{ c.itemsStyle }}">
+                  <sc-for list="{{ c.items }}" as="it" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 14px 9px 33px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--text-muted);">
+                      <span>{{ it.desc }} · {{ it.personLabel }}</span>
+                      <span style="font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap;">{{ it.amountFmt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Por pessoa</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border-radius:18px; overflow:hidden;">
+            <sc-for list="{{ porPessoa }}" as="p" hint-placeholder-count="2">
+              <div style="background:var(--surface); padding:16px;">
+                <div style="font-size:0.8rem; color:var(--text-muted);">{{ p.name }}</div>
+                <div style="font-family:var(--font-mono); font-size:1.05rem; margin-top:4px; font-variant-numeric:tabular-nums;">{{ p.amountFmt }}</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">{{ p.share }} das entradas</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Próximas contas</div>
+          <sc-if value="{{ hasUpcomingBills }}" hint-placeholder-val="{{ true }}">
+            <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);">
+              <sc-for list="{{ upcomingBills }}" as="b" hint-placeholder-count="3">
+                <div style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); gap:10px;">
+                  <div style="flex:1;">
+                    <div style="font-size:0.88rem;">{{ b.desc }}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">{{ b.dueLabel }} · {{ b.personLabel }}</div>
+                  </div>
+                  <div style="font-family:var(--font-mono); font-size:0.88rem; font-variant-numeric:tabular-nums;">{{ b.amountFmt }}</div>
+                  <div onClick="{{ b.onTogglePaid }}" style="font-family:var(--font-mono); font-size:0.64rem; border-radius:999px; background:var(--success-tint); color:var(--success); padding:6px 10px; cursor:pointer; white-space:nowrap;">Marcar paga</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ !hasUpcomingBills }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:0.85rem; color:var(--text-muted); padding:12px 0;">Nenhuma conta pendente neste mês.</div>
+          </sc-if>
+        </div>
+
+        <div style="margin-top:28px; display:flex; align-items:center; justify-content:center; gap:22px;">
+          <span onClick="{{ exportData }}" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent); cursor:pointer;">Exportar backup (.txt)</span>
+          <span onClick="{{ clearAll }}" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); cursor:pointer;">Zerar todos os dados</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLancamentos }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+            <div onClick="{{ openImport }}" style="font-family:var(--font-mono); font-size:0.72rem; border-radius:999px; background:var(--accent-tint); color:var(--accent); padding:8px 14px; cursor:pointer;">+ Importar lista</div>
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px;">
+            <sc-for list="{{ personFilters }}" as="pf" hint-placeholder-count="4">
+              <div onClick="{{ pf.onClick }}" style="{{ pf.style }}">{{ pf.label }}</div>
+            </sc-for>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Entradas</div>
+          <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); margin-bottom:22px;">
+            <sc-for list="{{ entradasList }}" as="e" hint-placeholder-count="2">
+              <div onClick="{{ e.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
+                <div>
+                  <div style="font-size:0.88rem;">{{ e.desc }}</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ e.personLabel }}{{ e.tagSuffix }} · <span onClick="{{ e.onClone }}" style="color:var(--accent); cursor:pointer;">clonar p/ próximo mês</span></div>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:0.9rem; color:var(--success); font-variant-numeric:tabular-nums;">+{{ e.amountFmt }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ entradasEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px; font-size:0.85rem; color:var(--text-muted);">Sem entradas neste mês.</div>
+            </sc-if>
+          </div>
+
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Saídas</div>
+          <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);">
+            <sc-for list="{{ saidasList }}" as="s" hint-placeholder-count="4">
+              <div onClick="{{ s.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;">
+                <div>
+                  <div style="font-size:0.88rem;">{{ s.desc }}</div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
+                    <span style="font-family:var(--font-mono); font-size:0.64rem; padding:3px 9px; border-radius:999px; background:{{ s.catBg }}; color:{{ s.catColor }};">{{ s.catLabel }}</span>
+                    <span style="font-size:0.72rem; color:var(--text-muted);">{{ s.personLabel }}{{ s.tagSuffix }}</span>
+                    <span onClick="{{ s.onClone }}" style="font-size:0.72rem; color:var(--accent); cursor:pointer;">clonar</span>
+                  </div>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums;">-{{ s.amountFmt }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ saidasEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px; font-size:0.85rem; color:var(--text-muted);">Sem saídas neste mês.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isContas }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Contas fixas e parcelamentos · {{ viewMonthLabel }}</div>
+          <sc-if value="{{ hasUnpaidContas }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ markAllPaid }}" style-hover="opacity:0.85;" style="display:flex; align-items:center; justify-content:center; gap:6px; background:var(--success-tint); color:var(--success); padding:11px; border-radius:14px; margin-bottom:12px; font-family:var(--font-mono); font-size:0.78rem; cursor:pointer;">✓ Marcar todas como pagas ({{ unpaidContasLabel }})</div>
+          </sc-if>
+          <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow);">
+            <sc-for list="{{ contasList }}" as="c" hint-placeholder-count="5">
+              <div style="padding:16px; border-bottom:1px solid var(--line);">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <div onClick="{{ c.onEdit }}" style="cursor:pointer; flex:1;">
+                    <div style="font-size:0.9rem;">{{ c.desc }}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">{{ c.personLabel }} · {{ c.dueLabel }}{{ c.parcelaSuffix }}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-family:var(--font-mono); font-size:0.9rem; font-variant-numeric:tabular-nums;">{{ c.amountFmt }}</div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
+                  <span style="font-family:var(--font-mono); font-size:0.64rem; padding:4px 10px; border-radius:999px; background:{{ c.statusBg }}; color:{{ c.statusColor }};">{{ c.statusLabel }}</span>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div onClick="{{ c.onClone }}" style="font-size:0.76rem; color:var(--accent); cursor:pointer;">Clonar p/ próximo mês</div>
+                    <div onClick="{{ c.onTogglePaid }}" style="font-size:0.76rem; color:var(--accent); cursor:pointer; font-weight:500;">{{ c.toggleLabel }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ contasEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px; font-size:0.85rem; color:var(--text-muted);">Nenhuma conta cadastrada para este mês.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProjecao }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Projeção — próximos {{ monthsCount }} meses</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); padding:14px 16px; border-radius:16px; margin-bottom:12px;">
+            <div style="font-size:0.8rem; color:var(--text-muted);">Saldo acumulado ({{ monthsCount }} meses)</div>
+            <div style="font-family:var(--font-mono); font-size:1.05rem; color:{{ annualSaldoColor }}; font-variant-numeric:tabular-nums;">{{ annualSaldoFmt }}</div>
+          </div>
+          <sc-if value="{{ hasNegMonths }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; gap:8px; background:var(--critical-tint); color:var(--critical); padding:11px 14px; border-radius:14px; margin-bottom:12px; font-size:0.8rem;">⚠ {{ negLabel }}</div>
+          </sc-if>
+          <div style="background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); margin-bottom:20px;">
+            <sc-for list="{{ projList }}" as="m" hint-placeholder-count="6">
+              <div onClick="{{ m.onSelect }}" style="padding:13px 16px; border-bottom:1px solid var(--line); cursor:pointer; background:{{ m.rowBg }}; border-left:{{ m.warnBorder }};">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <div style="font-size:0.88rem; display:flex; align-items:center; gap:8px;">{{ m.label }}<span style="{{ m.badgeStyle }}">★ evento</span></div>
+                  <div style="font-family:var(--font-mono); font-size:0.9rem; color:{{ m.saldoColor }}; font-variant-numeric:tabular-nums;">{{ m.saldoFmt }}</div>
+                </div>
+                <div style="{{ m.warnStyle }}">⚠ {{ m.warnLabel }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasProjDetail }}" hint-placeholder-val="{{ true }}">
+            <div style="background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); padding:20px; border-radius:18px;">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div style="font-family:var(--font-display); font-weight:600; font-size:1.05rem;">{{ projDetailLabel }}</div>
+                <div onClick="{{ openProjEventForm }}" style="font-family:var(--font-mono); font-size:0.78rem; border-radius:999px; background:var(--accent-tint); color:var(--accent); padding:7px 12px; cursor:pointer;">+ evento</div>
+              </div>
+              <div style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;">Entradas {{ projDetailEntradasFmt }} · Saídas {{ projDetailSaidasFmt }}</div>
+              <div style="margin-top:14px;">
+                <sc-for list="{{ projDetailEntries }}" as="d" hint-placeholder-count="3">
+                  <div onClick="{{ d.onEdit }}" style-hover="background:var(--surface-sunken);" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 6px; border-top:1px solid var(--line); cursor:pointer; border-radius:8px;">
+                    <div style="font-size:0.84rem;">{{ d.desc }}{{ d.eventTag }}</div>
+                    <div style="font-family:var(--font-mono); font-size:0.84rem; color:{{ d.color }}; font-variant-numeric:tabular-nums; white-space:nowrap;">{{ d.sign }}{{ d.amountFmt }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <div style="flex-shrink:0; margin:0 16px 16px; display:flex; align-items:center; gap:2px; background:var(--surface); border-radius:22px; padding:6px; box-shadow:var(--shadow); border:1px solid var(--line); z-index:10; overflow:visible;">
+      <sc-for list="{{ tabsLeft }}" as="t" hint-placeholder-count="2">
+        <div onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</div>
+      </sc-for>
+      <div onClick="{{ openQuickAdd }}" style-hover="opacity:0.85;" style="flex-shrink:0; width:44px; height:44px; border-radius:50%; background:var(--accent); color:var(--bg); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-family:var(--font-mono); cursor:pointer; transition:opacity 0.15s;">+</div>
+      <sc-for list="{{ tabsRight }}" as="t" hint-placeholder-count="2">
+        <div onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ importOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; background:rgba(15,22,19,0.55); display:flex; align-items:flex-end; justify-content:center; z-index:50;">
+        <div style="width:100%; max-height:88%; overflow-y:auto; background:var(--surface); box-shadow:var(--shadow); padding:14px 20px 24px; border-radius:26px 26px 0 0;">
+          <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Importar lista</div>
+            <div onClick="{{ closeImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">Uma conta por linha, separada por ; — dia; descrição; valor; parcela (opcional).<br/>O dia pode ser só o número (dia do vencimento) ou uma data completa. Lança no mês em exibição.<br/>Ex.: 5; Aluguel; 2100 &nbsp;·&nbsp; 10; Celular; 210; 3/10</div>
+          <textarea value="{{ importText }}" onChange="{{ onImportTextChange }}" placeholder="5; Aluguel; 2100
+10; Celular; 210; 3/10" style="width:100%; box-sizing:border-box; min-height:140px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem; font-family:var(--font-mono); margin-bottom:14px;"></textarea>
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1;"></div>
+            <div onClick="{{ closeImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); border:1px solid var(--line-strong); border-radius:12px; padding:11px 18px; cursor:pointer;">Cancelar</div>
+            <div onClick="{{ processImport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 20px; cursor:pointer;">Processar</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; background:rgba(15,22,19,0.55); display:flex; align-items:flex-end; justify-content:center; z-index:50;">
+        <div style="width:100%; max-height:88%; overflow-y:auto; background:var(--surface); box-shadow:var(--shadow); padding:14px 20px 24px; border-radius:26px 26px 0 0;">
+          <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Backup gerado</div>
+            <div onClick="{{ closeExport }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">O arquivo .txt foi baixado. Você também pode copiar o texto abaixo e guardar onde preferir.</div>
+          <textarea value="{{ exportText }}" readonly style="width:100%; box-sizing:border-box; min-height:220px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.76rem; font-family:var(--font-mono); line-height:1.5;"></textarea>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ syncModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; background:rgba(15,22,19,0.55); display:flex; align-items:flex-end; justify-content:center; z-index:50;">
+        <div style="width:100%; max-height:92%; overflow-y:auto; background:var(--surface); box-shadow:var(--shadow); padding:14px 20px 28px; border-radius:26px 26px 0 0;">
+          <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">Sincronizar com o parceiro</div>
+            <div onClick="{{ closeSync }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:14px;"><span style="{{ syncDotStyle }}"></span><span style="font-size:0.8rem; color:{{ syncStatusColor }};">{{ syncStatusLabel }}</span></div>
+
+          <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px;">
+            <div style="margin-bottom:6px;"><b style="color:var(--text);">1.</b> Crie um projeto grátis em supabase.com.</div>
+            <div style="margin-bottom:6px;"><b style="color:var(--text);">2.</b> Em <i>SQL Editor</i>, cole e rode o código abaixo (cria a tabela do casal).</div>
+            <div style="margin-bottom:6px;"><b style="color:var(--text);">3.</b> Em <i>Settings → API</i>, copie a <i>Project URL</i> e a <i>anon public key</i> nos campos abaixo.</div>
+            <div><b style="color:var(--text);">4.</b> Combinem o mesmo <i>código do casal</i> e toquem em Conectar nos dois celulares.</div>
+          </div>
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">SQL para rodar no Supabase (copie)</label>
+          <textarea value="{{ syncSql }}" readonly onClick="{{ selectAllOnClick }}" style="width:100%; box-sizing:border-box; min-height:150px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.72rem; font-family:var(--font-mono); line-height:1.5; margin-bottom:16px;"></textarea>
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Project URL</label>
+          <input value="{{ syncDraftUrl }}" onChange="{{ onSyncUrlChange }}" placeholder="https://xxxx.supabase.co" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem; font-family:var(--font-mono); margin-bottom:12px;" />
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">anon public key</label>
+          <input value="{{ syncDraftKey }}" onChange="{{ onSyncKeyChange }}" placeholder="eyJhbGciOi..." style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem; font-family:var(--font-mono); margin-bottom:12px;" />
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Código do casal (o mesmo nos dois aparelhos)</label>
+          <input value="{{ syncDraftCode }}" onChange="{{ onSyncCodeChange }}" placeholder="ex.: nauly-leo-2026" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem; font-family:var(--font-mono); margin-bottom:8px;" />
+          <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Quem conectar primeiro envia os lançamentos atuais; o outro recebe essa lista ao conectar. Depois disso, tudo edita junto.</div>
+
+          <div style="display:flex; gap:10px; align-items:center;">
+            <sc-if value="{{ isSyncConnected }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ disconnectSync }}" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;">Desconectar</div>
+            </sc-if>
+            <div style="flex:1;"></div>
+            <div onClick="{{ connectSync }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 22px; cursor:pointer;">Conectar</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; background:rgba(15,22,19,0.55); display:flex; align-items:flex-end; justify-content:center; z-index:50;">
+        <div style="width:100%; max-height:88%; overflow-y:auto; background:var(--surface); box-shadow:var(--shadow); padding:14px 20px 28px; border-radius:26px 26px 0 0;">
+          <div style="width:40px; height:4px; border-radius:999px; background:var(--line-strong); margin:0 auto 16px;"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <div style="font-family:var(--font-display); font-weight:600; font-size:1.1rem;">{{ formTitle }}</div>
+            <div onClick="{{ closeForm }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); cursor:pointer;">Fechar</div>
+          </div>
+
+          <div style="display:flex; gap:4px; margin-bottom:16px; background:var(--surface-sunken); border-radius:14px; padding:4px;">
+            <div onClick="{{ setTypeEntrada }}" style="{{ typeEntradaStyle }}">Entrada</div>
+            <div onClick="{{ setTypeSaida }}" style="{{ typeSaidaStyle }}">Saída</div>
+          </div>
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Descrição</label>
+          <input value="{{ draftDesc }}" onChange="{{ onDescChange }}" placeholder="Ex.: Mercado, Aluguel, Viagem" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem; margin-bottom:14px;" />
+
+          <div style="display:flex; gap:12px; margin-bottom:14px;">
+            <div style="flex:1;">
+              <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Valor (R$)</label>
+              <input type="text" inputmode="decimal" placeholder="Ex.: 6.319,00" value="{{ draftAmount }}" onChange="{{ onAmountChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem; font-family:var(--font-mono);" />
+            </div>
+            <div style="flex:1;">
+              <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Mês</label>
+              <input type="month" value="{{ draftMonth }}" onChange="{{ onMonthChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem;" />
+            </div>
+          </div>
+
+          <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Pessoa</label>
+          <select value="{{ draftPerson }}" onChange="{{ onPersonChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem; margin-bottom:14px;">
+            <sc-for list="{{ personOptions }}" as="po" hint-placeholder-count="3">
+              <option value="{{ po.value }}">{{ po.label }}</option>
+            </sc-for>
+          </select>
+
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:pointer;" onClick="{{ toggleRecurring }}">
+            <div style="{{ checkboxStyle }}"></div>
+            <span style="font-size:0.86rem;">Recorrente (repete todo mês)</span>
+          </div>
+
+          <sc-if value="{{ isDraftSaida }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; gap:12px; margin-bottom:6px;">
+              <div style="flex:1;">
+                <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Parcelas (1 = à vista)</label>
+                <input type="number" min="1" value="{{ draftInstallments }}" onChange="{{ onInstallmentsChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem;" />
+              </div>
+              <div style="flex:1;">
+                <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Vencimento (dia)</label>
+                <input type="number" min="1" max="31" value="{{ draftDueDay }}" onChange="{{ onDueDayChange }}" placeholder="opcional" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem;" />
+              </div>
+            </div>
+
+            <sc-if value="{{ showParcelaAtual }}" hint-placeholder-val="{{ false }}">
+              <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Já em andamento? Parcela atual (nesse mês)</label>
+              <input type="number" min="1" value="{{ draftParcelaAtual }}" onChange="{{ onParcelaAtualChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.9rem; margin-bottom:6px;" />
+            </sc-if>
+
+            <div style="font-size:0.78rem; color:var(--text-muted); margin:10px 0 14px;">Classificação automática: <span style="color:{{ previewCatColor }}; font-family:var(--font-mono);">{{ previewCatLabel }}</span></div>
+          </sc-if>
+
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ deleteEntry }}" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--critical); border:1px solid var(--critical); border-radius:12px; padding:11px 16px; cursor:pointer;">Excluir</div>
+            </sc-if>
+            <div style="flex:1;"></div>
+            <div onClick="{{ closeForm }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted); border:1px solid var(--line-strong); border-radius:12px; padding:11px 18px; cursor:pointer;">Cancelar</div>
+            <div onClick="{{ saveEntry }}" style="font-family:var(--font-mono); font-size:0.85rem; color:var(--bg); background:var(--accent); border-radius:12px; padding:11px 20px; cursor:pointer;">Salvar</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:860},&quot;personA&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nauály&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;personB&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Leonardo&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;monthsToProject&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:12,&quot;min&quot;:3,&quot;max&quot;:24,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;}}">
+const CAT_META = {
+  fixa: { label: 'Fixa', color: 'var(--accent)', bg: 'var(--accent-tint)' },
+  variavel: { label: 'Variável', color: 'var(--brass)', bg: 'var(--brass-tint)' },
+  parcelamento: { label: 'Parcelada', color: '#5B6B66', bg: 'rgba(91,107,102,0.14)' },
+};
+
+function monthIdxFn(key) {
+  const [y, m] = key.split('-').map(Number);
+  return y * 12 + (m - 1);
+}
+function monthKeyFromIdxFn(idx) {
+  const y = Math.floor(idx / 12);
+  const m = (idx % 12) + 1;
+  return `${y}-${String(m).padStart(2, '0')}`;
+}
+function addMonthsFn(key, n) {
+  return monthKeyFromIdxFn(monthIdxFn(key) + n);
+}
+
+class Component extends DCLogic {
+  monthIdx(key) { return monthIdxFn(key); }
+  monthKeyFromIdx(idx) { return monthKeyFromIdxFn(idx); }
+  addMonths(key, n) { return addMonthsFn(key, n); }
+  monthLabel(key) {
+    const [y, m] = key.split('-').map(Number);
+    const d = new Date(y, m - 1, 1);
+    const s = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  fmt(n) {
+    n = Number(n) || 0;
+    const neg = n < 0;
+    const fixed = Math.abs(n).toFixed(2);
+    const [intPart, decPart] = fixed.split('.');
+    const withDots = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return (neg ? '-' : '') + 'R$ ' + withDots + ',' + decPart;
+  }
+  classify(draft) {
+    if (draft.type === 'entrada') return 'entrada';
+    if (Number(draft.installments) > 1) return 'parcelamento';
+    if (draft.recurring) return 'fixa';
+    return 'variavel';
+  }
+  isActive(e, key) {
+    const k = this.monthIdx(key), s = this.monthIdx(e.month);
+    if (e.category === 'parcelamento') return k >= s && k < s + (Number(e.installments) || 1);
+    if (e.recurring) return k >= s;
+    return e.month === key;
+  }
+  parcelaAtual(e, key) {
+    return this.monthIdx(key) - this.monthIdx(e.month) + 1;
+  }
+
+  state = (() => {
+    const cur = '2026-07';
+    let entries = [];
+    try {
+      const saved = JSON.parse(localStorage.getItem('pf_entries_v1') || 'null');
+      if (Array.isArray(saved)) entries = saved;
+    } catch (e) {}
+    return {
+      tab: 'resumo',
+      personFilter: 'all',
+      expandedCat: null,
+      exportOpen: false,
+      exportText: '',
+      curMonth: cur,
+      viewMonth: cur,
+      projSelected: cur,
+      entries,
+      formOpen: false,
+      editingId: null,
+      draft: null,
+      importOpen: false,
+      importText: '',
+      sync: null,
+      syncStatus: 'off',
+      syncModalOpen: false,
+      syncDraftUrl: '',
+      syncDraftKey: '',
+      syncDraftCode: '',
+    };
+  })();
+
+  componentDidMount() {
+    let changed = false;
+    const entries = this.state.entries.map(e => {
+      if (e.type === 'entrada' && !e.recurring && this.isLikelySalary(e.desc)) { changed = true; return { ...e, recurring: true }; }
+      return e;
+    });
+    if (changed) this.setState({ entries });
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('pf_sync_v1') || 'null'); } catch (e) {}
+    if (cfg && cfg.url && cfg.key && cfg.code) {
+      this.setState({ sync: cfg, syncDraftUrl: cfg.url, syncDraftKey: cfg.key, syncDraftCode: cfg.code });
+      this._connect(cfg);
+    }
+  }
+  _ensureLib() {
+    return new Promise(resolve => {
+      let tries = 0;
+      const check = () => {
+        if (window.supabase && window.supabase.createClient) return resolve(window.supabase);
+        if (++tries > 60) return resolve(null);
+        setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+  openSync() { this.setState({ syncModalOpen: true }); }
+  closeSync() { this.setState({ syncModalOpen: false }); }
+  setSyncField(f, v) { this.setState({ [f]: v }); }
+  async connectSync() {
+    const url = (this.state.syncDraftUrl || '').trim();
+    const key = (this.state.syncDraftKey || '').trim();
+    const code = (this.state.syncDraftCode || '').trim().toLowerCase().replace(/\s+/g, '-');
+    if (!url || !key || !code) { if (typeof alert === 'function') alert('Preencha a URL, a chave e o código do casal.'); return; }
+    const cfg = { url, key, code };
+    try { localStorage.setItem('pf_sync_v1', JSON.stringify(cfg)); } catch (e) {}
+    this.setState({ sync: cfg, syncDraftCode: code, syncModalOpen: false });
+    this._connect(cfg);
+  }
+  async _connect(cfg) {
+    this.setState({ syncStatus: 'connecting' });
+    const lib = await this._ensureLib();
+    if (!lib) { this.setState({ syncStatus: 'error' }); return; }
+    try {
+      if (this._channel && this._client) { try { this._client.removeChannel(this._channel); } catch (e) {} }
+      this._client = lib.createClient(cfg.url, cfg.key);
+      const res = await this._client.from('couples').select('data').eq('code', cfg.code).maybeSingle();
+      if (res.error) throw res.error;
+      if (res.data && res.data.data) {
+        this._lastRemoteJson = JSON.stringify(res.data.data);
+        this.setState({ entries: res.data.data });
+      } else {
+        this._lastRemoteJson = JSON.stringify(this.state.entries);
+        await this._client.from('couples').upsert({ code: cfg.code, data: this.state.entries, updated_at: new Date().toISOString() });
+      }
+      this._channel = this._client.channel('couple-' + cfg.code)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'couples', filter: 'code=eq.' + cfg.code }, payload => {
+          const d = payload && payload.new && payload.new.data;
+          if (d) { this._lastRemoteJson = JSON.stringify(d); this.setState({ entries: d }); }
+        })
+        .subscribe();
+      this.setState({ syncStatus: 'online' });
+    } catch (e) { this.setState({ syncStatus: 'error' }); }
+  }
+  _schedulePush() {
+    clearTimeout(this._pushTimer);
+    this._pushTimer = setTimeout(async () => {
+      if (!this._client || !this.state.sync) return;
+      try {
+        await this._client.from('couples').upsert({ code: this.state.sync.code, data: this.state.entries, updated_at: new Date().toISOString() });
+        this._lastRemoteJson = JSON.stringify(this.state.entries);
+      } catch (e) {}
+    }, 600);
+  }
+  disconnectSync() {
+    if (this._channel && this._client) { try { this._client.removeChannel(this._channel); } catch (e) {} }
+    this._client = null; this._channel = null;
+    try { localStorage.removeItem('pf_sync_v1'); } catch (e) {}
+    this.setState({ sync: null, syncStatus: 'off', syncModalOpen: false });
+  }
+  markAllPaid() {
+    this.setState(s => ({
+      entries: s.entries.map(e => {
+        if (e.type === 'saida' && (e.category === 'fixa' || e.category === 'parcelamento') && this.isActive(e, s.viewMonth) && !e.paidMonths.includes(s.viewMonth)) {
+          return { ...e, paidMonths: [...e.paidMonths, s.viewMonth] };
+        }
+        return e;
+      }),
+    }));
+  }
+  componentDidUpdate() {
+    if (this.state.entries !== this._lastSavedEntries) {
+      this._lastSavedEntries = this.state.entries;
+      const json = JSON.stringify(this.state.entries);
+      try { localStorage.setItem('pf_entries_v1', json); } catch (e) {}
+      if (this._client && this.state.syncStatus === 'online' && json !== this._lastRemoteJson) this._schedulePush();
+    }
+  }
+  personLabel(code) {
+    if (code === 'A') return this.props.personA || 'Você';
+    if (code === 'B') return this.props.personB || 'Parceiro(a)';
+    return 'Casal';
+  }
+
+  setTab(tab) { this.setState({ tab }); }
+  prevMonth() { this.setState(s => (this.monthIdx(s.viewMonth) > this.monthIdx(s.curMonth) ? { viewMonth: this.addMonths(s.viewMonth, -1) } : {})); }
+  nextMonth() { this.setState(s => ({ viewMonth: this.addMonths(s.viewMonth, 1) })); }
+
+  openQuickAdd() {
+    const s = this.state;
+    let month = s.viewMonth, recurring = false, type = 'saida';
+    if (s.tab === 'contas') recurring = true;
+    if (s.tab === 'projecao') month = s.projSelected;
+    this.setState({
+      formOpen: true, editingId: null,
+      draft: { type, desc: '', amount: '', person: 'Casal', month, recurring, installments: 1, parcelaAtual: 1, dueDay: '' },
+    });
+  }
+  openProjEventForm() {
+    this.setState(s => ({
+      formOpen: true, editingId: null,
+      draft: { type: 'saida', desc: '', amount: '', person: 'Casal', month: s.projSelected, recurring: false, installments: 1, parcelaAtual: 1, dueDay: '' },
+    }));
+  }
+  openEdit(entry, ctxMonth) {
+    const s = this.state;
+    const ref = ctxMonth || s.viewMonth;
+    const isParc = entry.category === 'parcelamento';
+    const refMonth = isParc ? ref : entry.month;
+    const parcelaAtual = isParc ? this.parcelaAtual(entry, ref) : 1;
+    this.setState({
+      formOpen: true, editingId: entry.id,
+      draft: { type: entry.type, desc: entry.desc, amount: String(entry.amount), person: entry.person, month: refMonth, recurring: entry.recurring, installments: entry.installments, parcelaAtual, dueDay: entry.dueDay ? String(entry.dueDay) : '' },
+    });
+  }
+  closeForm() { this.setState({ formOpen: false, draft: null, editingId: null }); }
+  isLikelyFixed(desc) {
+    const norm = String(desc || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const keywords = [
+      'aluguel', 'condominio', 'iptu', 'financiamento', 'prestacao', 'consorcio',
+      'agua', 'esgoto', 'energia', 'luz', 'gas', 'internet', 'telefone', 'celular',
+      'vivo', 'claro', 'tim', 'oi ', 'algar', 'sky', 'net ',
+      'seguro', 'ipva', 'plano de saude', 'plano odontologico', 'unimed', 'amil', 'sulamerica', 'hapvida', 'bradesco saude',
+      'escola', 'faculdade', 'universidade', 'curso', 'mensalidade', 'matricula',
+      'academia', 'netflix', 'spotify', 'amazon prime', 'disney', 'hbo', 'youtube premium', 'icloud', 'google one', 'assinatura',
+      'sindico', 'alarme', 'monitoramento', 'diarista', 'faxineira', 'pensao',
+    ];
+    return keywords.some(k => norm.includes(k));
+  }
+  isLikelySalary(desc) {
+    const norm = String(desc || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const keywords = ['salario', 'pagamento', 'pro labore', 'pro-labore', 'aposentadoria', 'beneficio', 'pensao', 'bolsa', 'renda', 'mesada', 'aluguel recebido', 'freela', 'comissao', 'dividendo', 'rendimento', 'vale'];
+    return keywords.some(k => norm.includes(k));
+  }
+  updateDraft(field, value) {
+    this.setState(s => {
+      const draft = { ...s.draft, [field]: value };
+      if (field === 'desc' && !s.editingId) {
+        if (draft.type === 'saida' && Number(draft.installments) <= 1) draft.recurring = this.isLikelyFixed(value);
+        else if (draft.type === 'entrada') draft.recurring = this.isLikelySalary(value);
+      }
+      return { draft };
+    });
+  }
+  clearAll() {
+    if (typeof confirm === 'function' && !confirm('Apagar TODOS os lançamentos? Essa ação não pode ser desfeita.')) return;
+    this.setState({ entries: [] });
+  }
+  setTypeEntrada() {
+    this.setState(s => {
+      const draft = { ...s.draft, type: 'entrada' };
+      if (!s.editingId) draft.recurring = this.isLikelySalary(draft.desc);
+      return { draft };
+    });
+  }
+  setTypeSaida() {
+    this.setState(s => {
+      const draft = { ...s.draft, type: 'saida' };
+      if (!s.editingId && Number(draft.installments) <= 1) draft.recurring = this.isLikelyFixed(draft.desc);
+      return { draft };
+    });
+  }
+  toggleRecurring() { this.setState(s => ({ draft: { ...s.draft, recurring: !s.draft.recurring } })); }
+
+  saveEntry() {
+    const d = this.state.draft;
+    const category = this.classify(d);
+    const installments = Math.max(1, Number(d.installments) || 1);
+    let month = d.month;
+    if (category === 'parcelamento') {
+      const atual = Math.min(Math.max(Number(d.parcelaAtual) || 1, 1), installments);
+      month = this.addMonths(d.month, -(atual - 1));
+    }
+    const payload = {
+      type: d.type, desc: d.desc || 'Sem descrição', person: d.person, month,
+      recurring: !!d.recurring, installments,
+      amount: this.parseMoney(d.amount), dueDay: d.dueDay ? Number(d.dueDay) : null, category,
+    };
+    this.setState(s => {
+      if (s.editingId) {
+        return { entries: s.entries.map(e => e.id === s.editingId ? { ...e, ...payload } : e), formOpen: false, draft: null, editingId: null };
+      }
+      const id = 'e' + Date.now();
+      return { entries: [...s.entries, { id, ...payload, paidMonths: [] }], formOpen: false, draft: null, editingId: null };
+    });
+  }
+  deleteEntry() {
+    this.setState(s => ({ entries: s.entries.filter(e => e.id !== s.editingId), formOpen: false, draft: null, editingId: null }));
+  }
+  togglePaid(id, monthKey) {
+    this.setState(s => ({
+      entries: s.entries.map(e => {
+        if (e.id !== id) return e;
+        const has = e.paidMonths.includes(monthKey);
+        return { ...e, paidMonths: has ? e.paidMonths.filter(m => m !== monthKey) : [...e.paidMonths, monthKey] };
+      }),
+    }));
+  }
+  selectProjMonth(key) { this.setState({ projSelected: key }); }
+  setPersonFilter(f) { this.setState({ personFilter: f }); }
+  toggleCat(cat) { this.setState(s => ({ expandedCat: s.expandedCat === cat ? null : cat })); }
+  exportData() {
+    const s = this.state;
+    const lines = [];
+    lines.push('BACKUP — App de planejamento financeiro');
+    lines.push('Gerado em ' + new Date().toLocaleString('pt-BR'));
+    lines.push('');
+    s.entries.slice().sort((a, b) => a.month.localeCompare(b.month)).forEach(e => {
+      const tipo = e.type === 'entrada' ? 'ENTRADA' : 'SAÍDA';
+      const parc = e.category === 'parcelamento' ? ` (${e.installments}x)` : '';
+      const rec = e.recurring ? ' [recorrente]' : '';
+      const dia = e.dueDay ? ` venc.${e.dueDay}` : '';
+      lines.push(`${e.month} · ${tipo} · ${e.desc} · ${this.fmt(e.amount)}${parc}${rec}${dia} · ${this.personLabel(e.person)}`);
+    });
+    const text = lines.join('\n');
+    try {
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'planejamento-financeiro.txt';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    } catch (err) {}
+    this.setState({ exportOpen: true, exportText: text });
+  }
+  closeExport() { this.setState({ exportOpen: false }); }
+
+  cloneEntry(entry) {
+    this.setState(s => ({ entries: [...s.entries, { ...entry, id: 'e' + Date.now() + Math.random().toString(36).slice(2, 6), month: this.addMonths(entry.month, 1), paidMonths: [] }] }));
+  }
+  openImport() { this.setState({ importOpen: true, importText: '' }); }
+  closeImport() { this.setState({ importOpen: false }); }
+  updateImportText(v) { this.setState({ importText: v }); }
+  parseMoney(str) {
+    let s = String(str || '').replace(/[^0-9.,-]/g, '');
+    if (s.includes(',') && s.includes('.')) s = s.replace(/\./g, '').replace(',', '.');
+    else if (s.includes(',')) s = s.replace(',', '.');
+    else if (s.includes('.')) {
+      const parts = s.split('.');
+      if (parts.length > 1 && parts[parts.length - 1].length === 3) s = parts.join('');
+    }
+    return parseFloat(s) || 0;
+  }
+  parseDateToMonth(str, fallback) {
+    let m = String(str || '').match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (m) { let yy = m[3]; if (yy.length === 2) yy = '20' + yy; return `${yy}-${String(m[2]).padStart(2, '0')}`; }
+    let m2 = String(str || '').match(/(\d{4})-(\d{1,2})/);
+    if (m2) return `${m2[1]}-${String(m2[2]).padStart(2, '0')}`;
+    return fallback;
+  }
+  parseDateDay(str) {
+    let m = String(str || '').match(/(\d{1,2})[\/\-]\d{1,2}[\/\-]\d{2,4}/);
+    if (m) return Number(m[1]);
+    let m2 = String(str || '').match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m2) return Number(m2[3]);
+    let m3 = String(str || '').trim().match(/^(\d{1,2})$/);
+    if (m3) { const d = Number(m3[1]); if (d >= 1 && d <= 31) return d; }
+    return null;
+  }
+  processImport() {
+    const cur = this.state.viewMonth;
+    const lines = this.state.importText.split('\n').map(l => l.trim()).filter(Boolean);
+    this.setState(s => {
+      const entries = s.entries.map(e => ({ ...e }));
+      lines.forEach((line, i) => {
+        const parts = line.split(/;|\|/).map(p => p.trim()).filter(Boolean);
+        if (parts.length < 2) return;
+        const [dateStr, desc, amountStr, parcelaStr] = parts;
+        const month = this.parseDateToMonth(dateStr, cur);
+        const day = this.parseDateDay(dateStr);
+        const amount = this.parseMoney(amountStr || '0');
+        let installments = 1, startMonth = month;
+        const pm = (parcelaStr || '').match(/(\d+)\s*\/\s*(\d+)/);
+        if (pm) { const atual = Number(pm[1]), total = Number(pm[2]); installments = total; startMonth = this.addMonths(month, -(atual - 1)); }
+        const finalDesc = desc || 'Sem descrição';
+        const recurring = installments <= 1 && this.isLikelyFixed(finalDesc);
+        const category = installments > 1 ? 'parcelamento' : (recurring ? 'fixa' : 'variavel');
+        const descKey = finalDesc.trim().toLowerCase();
+        const idx = entries.findIndex(e => e.type === 'saida' && e.desc.trim().toLowerCase() === descKey && e.month === startMonth);
+        if (idx >= 0) {
+          entries[idx] = { ...entries[idx], amount, installments, dueDay: day, category, recurring };
+        } else {
+          entries.push({ id: 'e' + Date.now() + '_' + i, type: 'saida', desc: finalDesc, person: 'Casal', month: startMonth, recurring, installments, amount, dueDay: day, category, paidMonths: [] });
+        }
+      });
+      return { entries, importOpen: false, importText: '' };
+    });
+  }
+
+  computeTotals(key, entries) {
+    let entradas = 0, saidas = 0, fixa = 0, variavel = 0, parcelamento = 0;
+    entries.forEach(e => {
+      if (!this.isActive(e, key)) return;
+      if (e.type === 'entrada') entradas += e.amount;
+      else {
+        saidas += e.amount;
+        if (e.category === 'fixa') fixa += e.amount;
+        else if (e.category === 'variavel') variavel += e.amount;
+        else if (e.category === 'parcelamento') parcelamento += e.amount;
+      }
+    });
+    return { entradas, saidas, fixa, variavel, parcelamento, saldo: entradas - saidas };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const entries = s.entries;
+    const monthsCount = this.props.monthsToProject ? Number(this.props.monthsToProject) : 12;
+    const pillColors = { off: ['var(--text-muted)', 'var(--surface-sunken)'], connecting: ['var(--brass)', 'var(--brass-tint)'], online: ['var(--success)', 'var(--success-tint)'], error: ['var(--critical)', 'var(--critical-tint)'] };
+    const [pc, pb] = pillColors[s.syncStatus] || pillColors.off;
+
+    const tabDefs = [
+      { key: 'resumo', label: 'Resumo' },
+      { key: 'lancamentos', label: 'Lançamentos' },
+      { key: 'contas', label: 'Contas' },
+      { key: 'projecao', label: 'Projeção' },
+    ];
+    const tabs = tabDefs.map(t => ({
+      label: t.label,
+      onClick: () => this.setTab(t.key),
+      style: `flex:1; text-align:center; padding:10px 2px; border-radius:16px; font-family:var(--font-mono); font-size:0.64rem; letter-spacing:0.01em; cursor:pointer; transition:background 0.15s,color 0.15s; background:${s.tab === t.key ? 'var(--accent-tint)' : 'transparent'}; color:${s.tab === t.key ? 'var(--accent)' : 'var(--text-muted)'}; font-weight:${s.tab === t.key ? '600' : '400'};`,
+    }));
+
+    const totals = this.computeTotals(s.viewMonth, entries);
+    const saidasTotal = totals.saidas || 1;
+    const catSegments = [
+      { key: 'fixa', width: `${(totals.fixa / saidasTotal * 100).toFixed(1)}%`, color: CAT_META.fixa.color, tag: totals.fixa > 0 ? 'Fixas' : '' },
+      { key: 'variavel', width: `${(totals.variavel / saidasTotal * 100).toFixed(1)}%`, color: CAT_META.variavel.color, tag: totals.variavel > 0 ? 'Variáveis' : '' },
+      { key: 'parcelamento', width: `${(totals.parcelamento / saidasTotal * 100).toFixed(1)}%`, color: CAT_META.parcelamento.color, tag: totals.parcelamento > 0 ? 'Parceladas' : '' },
+    ];
+    const catLegend = [
+      { color: CAT_META.fixa.color, label: 'Fixas', amountFmt: this.fmt(totals.fixa) },
+      { color: CAT_META.variavel.color, label: 'Variáveis', amountFmt: this.fmt(totals.variavel) },
+      { color: CAT_META.parcelamento.color, label: 'Parceladas', amountFmt: this.fmt(totals.parcelamento) },
+    ];
+    const catList = ['fixa', 'variavel', 'parcelamento'].map(cat => {
+      const meta = CAT_META[cat];
+      const items = entries.filter(e => e.type === 'saida' && e.category === cat && this.isActive(e, s.viewMonth))
+        .sort((a, b) => b.amount - a.amount)
+        .map(e => ({ desc: e.desc, amountFmt: this.fmt(e.amount), personLabel: this.personLabel(e.person) }));
+      const expanded = s.expandedCat === cat;
+      return {
+        key: cat, label: meta.label, color: meta.color,
+        amountFmt: this.fmt(totals[cat]),
+        onToggle: () => this.toggleCat(cat),
+        caret: items.length === 0 ? '' : (expanded ? '−' : '+'),
+        items,
+        itemsStyle: expanded && items.length ? '' : 'display:none;',
+      };
+    });
+    const personFilters = [{ key: 'all', label: 'Todos' }, { key: 'A', label: this.personLabel('A') }, { key: 'B', label: this.personLabel('B') }, { key: 'Casal', label: 'Casal' }].map(f => ({
+      label: f.label,
+      onClick: () => this.setPersonFilter(f.key),
+      style: `flex-shrink:0; padding:7px 14px; border-radius:999px; font-family:var(--font-mono); font-size:0.72rem; cursor:pointer; white-space:nowrap; background:${s.personFilter === f.key ? 'var(--accent-tint)' : 'var(--surface)'}; color:${s.personFilter === f.key ? 'var(--accent)' : 'var(--text-muted)'}; border:1px solid ${s.personFilter === f.key ? 'transparent' : 'var(--line)'};`,
+    }));
+
+    const porPessoaRaw = ['A', 'B'].map(code => {
+      let amt = 0;
+      entries.forEach(e => { if (e.type === 'entrada' && e.person === code && this.isActive(e, s.viewMonth)) amt += e.amount; });
+      return { code, amt };
+    });
+    const totalEntradasPessoas = porPessoaRaw.reduce((a, p) => a + p.amt, 0) || 1;
+    const porPessoa = porPessoaRaw.map(p => ({
+      name: this.personLabel(p.code),
+      amountFmt: this.fmt(p.amt),
+      share: `${Math.round(p.amt / totalEntradasPessoas * 100)}%`,
+    }));
+
+    const isCurRealMonth = s.viewMonth === s.curMonth;
+    const todayDay = new Date().getDate();
+    const bills = entries.filter(e => e.type === 'saida' && (e.category === 'fixa' || e.category === 'parcelamento') && this.isActive(e, s.viewMonth));
+    const unpaidBills = bills.filter(e => !e.paidMonths.includes(s.viewMonth)).sort((a, b) => (a.dueDay || 99) - (b.dueDay || 99)).slice(0, 5);
+    const upcomingBills = unpaidBills.map(e => ({ desc: e.desc, dueLabel: e.dueDay ? `Vence dia ${e.dueDay}` : 'Dia não definido', personLabel: this.personLabel(e.person), amountFmt: this.fmt(e.amount), onTogglePaid: () => this.togglePaid(e.id, s.viewMonth) }));
+    const canGoPrev = this.monthIdx(s.viewMonth) > this.monthIdx(s.curMonth);
+
+    const pf = s.personFilter;
+    const entradasList = entries.filter(e => e.type === 'entrada' && this.isActive(e, s.viewMonth) && (pf === 'all' || e.person === pf)).map(e => ({
+      id: e.id, desc: e.desc, personLabel: this.personLabel(e.person),
+      tagSuffix: (e.recurring ? ' · recorrente' : '') + (e.dueDay ? ` · dia ${e.dueDay}` : ''),
+      amountFmt: this.fmt(e.amount), onEdit: () => this.openEdit(e),
+      onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
+    }));
+    const saidasList = entries.filter(e => e.type === 'saida' && this.isActive(e, s.viewMonth) && (pf === 'all' || e.person === pf)).map(e => {
+      const meta = CAT_META[e.category];
+      const parcela = (e.category === 'parcelamento' ? ` · ${this.parcelaAtual(e, s.viewMonth)}/${e.installments}` : '') + (e.dueDay ? ` · dia ${e.dueDay}` : '');
+      return {
+        id: e.id, desc: e.desc, personLabel: this.personLabel(e.person), tagSuffix: parcela,
+        catLabel: meta.label, catColor: meta.color, catBg: meta.bg,
+        amountFmt: this.fmt(e.amount), onEdit: () => this.openEdit(e),
+        onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
+      };
+    });
+
+    const contasSource = entries.filter(e => e.type === 'saida' && (e.category === 'fixa' || e.category === 'parcelamento') && this.isActive(e, s.viewMonth));
+    const contasList = contasSource.map(e => {
+      const paid = e.paidMonths.includes(s.viewMonth);
+      let statusLabel = 'Pendente', statusColor = 'var(--warning)', statusBg = 'var(--warning-tint)';
+      if (paid) { statusLabel = 'Paga'; statusColor = 'var(--success)'; statusBg = 'var(--success-tint)'; }
+      else if (isCurRealMonth && e.dueDay && e.dueDay < todayDay) { statusLabel = 'Atrasada'; statusColor = 'var(--critical)'; statusBg = 'var(--critical-tint)'; }
+      return {
+        id: e.id, desc: e.desc, personLabel: this.personLabel(e.person),
+        dueLabel: e.dueDay ? `vence dia ${e.dueDay}` : 'sem dia definido',
+        parcelaSuffix: e.category === 'parcelamento' ? ` · parcela ${this.parcelaAtual(e, s.viewMonth)}/${e.installments}` : '',
+        amountFmt: this.fmt(e.amount), statusLabel, statusColor, statusBg,
+        toggleLabel: paid ? 'Desmarcar' : 'Marcar como paga',
+        onTogglePaid: () => this.togglePaid(e.id, s.viewMonth),
+        onEdit: () => this.openEdit(e),
+        onClone: ev => { ev.stopPropagation(); this.cloneEntry(e); },
+      };
+    });
+
+    const unpaidContas = contasSource.filter(e => !e.paidMonths.includes(s.viewMonth)).length;
+    const projList = [];
+    let negCount = 0, annualSaldo = 0;
+    for (let i = 0; i < monthsCount; i++) {
+      const key = this.addMonths(s.curMonth, i);
+      const t = this.computeTotals(key, entries);
+      const hasEvento = entries.some(e => !e.recurring && e.category !== 'parcelamento' && e.month === key && key !== s.curMonth);
+      const neg = t.saldo < 0;
+      if (neg) negCount++;
+      annualSaldo += t.saldo;
+      projList.push({
+        key, label: this.monthLabel(key), saldoFmt: this.fmt(t.saldo),
+        saldoColor: t.saldo >= 0 ? 'var(--success)' : 'var(--critical)',
+        rowBg: key === s.projSelected ? 'var(--accent-tint)' : 'transparent',
+        badgeStyle: hasEvento ? 'font-family:var(--font-mono); font-size:0.6rem; color:var(--brass); background:var(--brass-tint); padding:2px 6px; border-radius:999px;' : 'display:none;',
+        warnLabel: neg ? `faltam ${this.fmt(Math.abs(t.saldo))}` : '',
+        warnStyle: neg ? 'font-size:0.68rem; color:var(--critical); margin-top:2px;' : 'display:none;',
+        warnBorder: neg ? '3px solid var(--critical)' : '3px solid transparent',
+        onSelect: () => this.selectProjMonth(key),
+      });
+    }
+    const projDetailKey = s.projSelected;
+    const projDetailTotals = this.computeTotals(projDetailKey, entries);
+    const projDetailEntries = entries.filter(e => this.isActive(e, projDetailKey)).map(e => ({
+      desc: e.desc,
+      eventTag: (!e.recurring && e.category !== 'parcelamento' && e.month === projDetailKey && projDetailKey !== s.curMonth) ? ' (evento)' : '',
+      sign: e.type === 'entrada' ? '+' : '-',
+      color: e.type === 'entrada' ? 'var(--success)' : 'var(--text)',
+      amountFmt: this.fmt(e.amount),
+      onEdit: () => this.openEdit(e, projDetailKey),
+    }));
+
+    const isEditing = !!s.editingId;
+    const d = s.draft || {};
+    const previewCat = this.classify(d);
+    const previewMeta = CAT_META[previewCat] || CAT_META.variavel;
+
+    return {
+      showMonthSwitcher: s.tab !== 'projecao',
+      viewMonthLabel: this.monthLabel(s.viewMonth),
+      tabs, tabsLeft: tabs.slice(0, 2), tabsRight: tabs.slice(2),
+      isResumo: s.tab === 'resumo', isLancamentos: s.tab === 'lancamentos', isContas: s.tab === 'contas', isProjecao: s.tab === 'projecao',
+      prevMonth: () => this.prevMonth(), nextMonth: () => this.nextMonth(),
+      prevMonthStyle: `width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1rem; color:var(--text-muted); transition:background 0.15s; ${canGoPrev ? 'cursor:pointer; opacity:1;' : 'cursor:default; opacity:0.3;'}`,
+      saldoFmt: this.fmt(totals.saldo), saldoColor: totals.saldo >= 0 ? 'var(--success)' : 'var(--critical)',
+      entradasFmt: this.fmt(totals.entradas), saidasFmt: this.fmt(totals.saidas),
+      catSegments, catLegend, catList, porPessoa, personFilters,
+      hasUpcomingBills: upcomingBills.length > 0, upcomingBills,
+      entradasList, entradasEmpty: entradasList.length === 0,
+      saidasList, saidasEmpty: saidasList.length === 0,
+      contasList, contasEmpty: contasList.length === 0,
+      monthsCount, projList,
+      hasNegMonths: negCount > 0, negLabel: `${negCount} ${negCount === 1 ? 'mês fica' : 'meses ficam'} no vermelho`,
+      markAllPaid: () => this.markAllPaid(),
+      hasUnpaidContas: unpaidContas > 0, unpaidContasLabel: String(unpaidContas),
+      annualSaldoFmt: this.fmt(annualSaldo), annualSaldoColor: annualSaldo >= 0 ? 'var(--success)' : 'var(--critical)',
+      exportData: () => this.exportData(), closeExport: () => this.closeExport(),
+      exportOpen: s.exportOpen, exportText: s.exportText,
+
+      syncStatus: s.syncStatus, syncModalOpen: s.syncModalOpen,
+      syncPillLabel: { off: 'Sincronizar', connecting: 'Conectando…', online: 'Sincronizado', error: 'Erro — tocar' }[s.syncStatus] || 'Sincronizar',
+      syncPillStyle: `display:flex; align-items:center; gap:6px; flex-shrink:0; margin-top:2px; padding:6px 11px; border-radius:999px; font-family:var(--font-mono); font-size:0.62rem; cursor:pointer; background:${pb}; color:${pc};`,
+      syncDotStyle: `width:7px; height:7px; border-radius:50%; flex-shrink:0; background:${pc};`,
+      syncStatusLabel: { off: 'Não conectado', connecting: 'Conectando…', online: 'Conectado e sincronizando', error: 'Falha ao conectar — confira URL, chave e se rodou o SQL' }[s.syncStatus] || 'Não conectado',
+      syncStatusColor: pc,
+      isSyncConnected: s.syncStatus === 'online' || s.syncStatus === 'connecting',
+      openSync: () => this.openSync(), closeSync: () => this.closeSync(),
+      connectSync: () => this.connectSync(), disconnectSync: () => this.disconnectSync(),
+      selectAllOnClick: ev => { try { ev.target.select(); } catch (e) {} },
+      syncSql: 'create table if not exists couples (\n  code text primary key,\n  data jsonb,\n  updated_at timestamptz default now()\n);\nalter table couples enable row level security;\ncreate policy "couple access" on couples\n  for all using (true) with check (true);\nalter publication supabase_realtime add table couples;',
+      syncDraftUrl: s.syncDraftUrl, onSyncUrlChange: ev => this.setSyncField('syncDraftUrl', ev.target.value),
+      syncDraftKey: s.syncDraftKey, onSyncKeyChange: ev => this.setSyncField('syncDraftKey', ev.target.value),
+      syncDraftCode: s.syncDraftCode, onSyncCodeChange: ev => this.setSyncField('syncDraftCode', ev.target.value),
+      hasProjDetail: true, projDetailLabel: this.monthLabel(projDetailKey),
+      projDetailEntradasFmt: this.fmt(projDetailTotals.entradas), projDetailSaidasFmt: this.fmt(projDetailTotals.saidas),
+      projDetailEntries,
+      openProjEventForm: () => this.openProjEventForm(),
+      openQuickAdd: () => this.openQuickAdd(),
+
+      formOpen: s.formOpen,
+      formTitle: isEditing ? 'Editar lançamento' : 'Novo lançamento',
+      isEditing,
+      closeForm: () => this.closeForm(),
+      setTypeEntrada: () => this.setTypeEntrada(), setTypeSaida: () => this.setTypeSaida(),
+      typeEntradaStyle: `flex:1; text-align:center; padding:9px; border-radius:10px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer; transition:background 0.15s; background:${d.type === 'entrada' ? 'var(--success-tint)' : 'transparent'}; color:${d.type === 'entrada' ? 'var(--success)' : 'var(--text-muted)'};`,
+      typeSaidaStyle: `flex:1; text-align:center; padding:9px; border-radius:10px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer; transition:background 0.15s; background:${d.type === 'saida' ? 'var(--critical-tint)' : 'transparent'}; color:${d.type === 'saida' ? 'var(--critical)' : 'var(--text-muted)'};`,
+      draftDesc: d.desc, onDescChange: ev => this.updateDraft('desc', ev.target.value),
+      draftAmount: d.amount, onAmountChange: ev => this.updateDraft('amount', ev.target.value),
+      draftMonth: d.month, onMonthChange: ev => this.updateDraft('month', ev.target.value),
+      draftPerson: d.person, onPersonChange: ev => this.updateDraft('person', ev.target.value),
+      personOptions: [{ value: 'Casal', label: 'Casal' }, { value: 'A', label: this.personLabel('A') }, { value: 'B', label: this.personLabel('B') }],
+      isDraftSaida: d.type === 'saida',
+      toggleRecurring: () => this.toggleRecurring(),
+      checkboxStyle: `width:18px; height:18px; border-radius:6px; border:1px solid var(--line-strong); background:${d.recurring ? 'var(--accent)' : 'transparent'}; transition:background 0.15s;`,
+      draftInstallments: d.installments, onInstallmentsChange: ev => this.updateDraft('installments', ev.target.value),
+      showParcelaAtual: Number(d.installments) > 1,
+      draftParcelaAtual: d.parcelaAtual || 1, onParcelaAtualChange: ev => this.updateDraft('parcelaAtual', ev.target.value),
+      draftDueDay: d.dueDay, onDueDayChange: ev => this.updateDraft('dueDay', ev.target.value),
+      previewCatLabel: previewMeta.label, previewCatColor: previewMeta.color,
+      saveEntry: () => this.saveEntry(), deleteEntry: () => this.deleteEntry(),
+      clearAll: () => this.clearAll(),
+
+      importOpen: s.importOpen, importText: s.importText,
+      openImport: () => this.openImport(), closeImport: () => this.closeImport(),
+      onImportTextChange: ev => this.updateImportText(ev.target.value),
+      processImport: () => this.processImport(),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": []
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Plex Serif|Plex Sans|Plex Mono))/i]",
+        "message": "Font not provided by the design system. Available: Plex Serif, Plex Sans, Plex Mono."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {},
+    "tokens": [
+      "--accent",
+      "--accent-strong",
+      "--accent-tint",
+      "--bg",
+      "--brass",
+      "--brass-tint",
+      "--critical",
+      "--critical-tint",
+      "--font-body",
+      "--font-display",
+      "--font-mono",
+      "--line",
+      "--line-strong",
+      "--shadow",
+      "--success",
+      "--success-tint",
+      "--surface",
+      "--surface-sunken",
+      "--text",
+      "--text-muted",
+      "--warning",
+      "--warning-tint"
+    ],
+    "tokenKinds": {
+      "--font-display": "font",
+      "--font-body": "font",
+      "--font-mono": "font",
+      "--bg": "color",
+      "--surface": "color",
+      "--surface-sunken": "color",
+      "--text": "font",
+      "--text-muted": "font",
+      "--line": "color",
+      "--line-strong": "color",
+      "--accent": "color",
+      "--accent-strong": "color",
+      "--accent-tint": "color",
+      "--brass": "color",
+      "--brass-tint": "color",
+      "--success": "color",
+      "--success-tint": "color",
+      "--warning": "color",
+      "--warning-tint": "color",
+      "--critical": "color",
+      "--critical-tint": "color",
+      "--shadow": "shadow"
+    },
+    "fontFamilies": [
+      "Plex Mono",
+      "Plex Sans",
+      "Plex Serif"
+    ]
+  }
+}

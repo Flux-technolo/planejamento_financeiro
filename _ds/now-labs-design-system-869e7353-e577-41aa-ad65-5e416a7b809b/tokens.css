@@ -1,0 +1,142 @@
+/*
+  NOW Labs — Design Tokens
+  Fonte de verdade prosa: ../docs/15-Sistema-de-Design.md
+  Não editar cores/tipografia direto nos componentes — só aqui.
+*/
+
+@font-face {
+  font-family: 'Plex Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-serif-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Serif';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-serif-600.woff2') format('woff2');
+}
+/* Arquivo variável único — as três declarações abaixo compartilham o mesmo
+   woff2 e o navegador seleciona o eixo de peso correto por font-weight. */
+@font-face {
+  font-family: 'Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+:root {
+  /* Tipografia */
+  --font-display: 'Plex Serif', serif;
+  --font-body: 'Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Plex Mono', ui-monospace, monospace;
+
+  /* Cor — modo claro (padrão) */
+  --bg: #F4F6F1;              /* Papel de Razão */
+  --surface: #FFFFFF;
+  --surface-sunken: #EBEEE7;
+  --text: #12201C;             /* Tinta */
+  --text-muted: #4B5850;
+  --line: rgba(18, 32, 28, 0.14);
+  --line-strong: rgba(18, 32, 28, 0.28);
+
+  --accent: #0E6B72;           /* Petróleo — acento primário de marca */
+  --accent-strong: #0A4F54;
+  --accent-tint: rgba(14, 107, 114, 0.10);
+
+  --brass: #96721F;            /* Latão — acento secundário, uso moderado */
+  --brass-tint: rgba(150, 114, 31, 0.12);
+
+  /* Semânticas — score de conciliação (07-Arquitetura.md). Nunca usar como cor de marca. */
+  --success: #2F7D4F;          /* score >= 95 — automática */
+  --success-tint: rgba(47, 125, 79, 0.12);
+  --warning: #C1571F;          /* score 80-94 — validação humana */
+  --warning-tint: rgba(193, 87, 31, 0.12);
+  --critical: #B33A3A;         /* score < 80 — pendente */
+  --critical-tint: rgba(179, 58, 58, 0.12);
+
+  --shadow: 0 1px 2px rgba(18, 32, 28, 0.06), 0 8px 24px rgba(18, 32, 28, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1613;
+    --surface: #17211D;
+    --surface-sunken: #0B100D;
+    --text: #EDF1EC;
+    --text-muted: #9FB0A8;
+    --line: rgba(237, 241, 236, 0.14);
+    --line-strong: rgba(237, 241, 236, 0.26);
+
+    --accent: #4FBFC7;
+    --accent-strong: #7ED4DA;
+    --accent-tint: rgba(79, 191, 199, 0.14);
+
+    --brass: #D9A54B;
+    --brass-tint: rgba(217, 165, 75, 0.14);
+
+    --success: #4CAE7B;
+    --success-tint: rgba(76, 174, 123, 0.14);
+    --warning: #E0864A;
+    --warning-tint: rgba(224, 134, 74, 0.14);
+    --critical: #D9685F;
+    --critical-tint: rgba(217, 104, 95, 0.14);
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0F1613; --surface: #17211D; --surface-sunken: #0B100D;
+  --text: #EDF1EC; --text-muted: #9FB0A8;
+  --line: rgba(237, 241, 236, 0.14); --line-strong: rgba(237, 241, 236, 0.26);
+  --accent: #4FBFC7; --accent-strong: #7ED4DA; --accent-tint: rgba(79, 191, 199, 0.14);
+  --brass: #D9A54B; --brass-tint: rgba(217, 165, 75, 0.14);
+  --success: #4CAE7B; --success-tint: rgba(76, 174, 123, 0.14);
+  --warning: #E0864A; --warning-tint: rgba(224, 134, 74, 0.14);
+  --critical: #D9685F; --critical-tint: rgba(217, 104, 95, 0.14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme='light'] {
+  --bg: #F4F6F1; --surface: #FFFFFF; --surface-sunken: #EBEEE7;
+  --text: #12201C; --text-muted: #4B5850;
+  --line: rgba(18, 32, 28, 0.14); --line-strong: rgba(18, 32, 28, 0.28);
+  --accent: #0E6B72; --accent-strong: #0A4F54; --accent-tint: rgba(14, 107, 114, 0.10);
+  --brass: #96721F; --brass-tint: rgba(150, 114, 31, 0.12);
+  --success: #2F7D4F; --success-tint: rgba(47, 125, 79, 0.12);
+  --warning: #C1571F; --warning-tint: rgba(193, 87, 31, 0.12);
+  --critical: #B33A3A; --critical-tint: rgba(179, 58, 58, 0.12);
+  --shadow: 0 1px 2px rgba(18, 32, 28, 0.06), 0 8px 24px rgba(18, 32, 28, 0.05);
+}
