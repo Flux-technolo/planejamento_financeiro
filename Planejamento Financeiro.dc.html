@@ -360,7 +360,10 @@
             </div>
             <div style="flex:1;">
               <label style="display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:4px;">Mês</label>
-              <input type="month" value="{{ draftMonth }}" onChange="{{ onMonthChange }}" style-focus="border-color:var(--accent);" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem;" />
+              <input type="month" value="{{ draftMonth }}" onChange="{{ onMonthChange }}" style-focus="border-color:var(--accent);" style="{{ monthFieldStyle }}" />
+              <sc-if value="{{ monthFieldLocked }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">Definido pelo mês em que a edição foi aberta.</div>
+              </sc-if>
             </div>
           </div>
 
@@ -679,6 +682,11 @@ class Component extends DCLogic {
   }
   updateDraft(field, value) {
     this.setState(s => {
+      if (field === 'month' && s.editingId) {
+        const original = s.entries.find(e => e.id === s.editingId);
+        const splittable = !!original && (original.category === 'parcelamento' || (original.category !== 'parcelamento' && original.recurring));
+        if (splittable) return {};
+      }
       const draft = { ...s.draft, [field]: value };
       if (field === 'desc' && !s.editingId) {
         if (draft.type === 'saida' && Number(draft.installments) <= 1) draft.recurring = this.isLikelyFixed(value);
@@ -895,6 +903,14 @@ class Component extends DCLogic {
         const recurring = installments <= 1 && this.isLikelyFixed(finalDesc);
         const category = installments > 1 ? 'parcelamento' : (recurring ? 'fixa' : 'variavel');
         const descKey = finalDesc.trim().toLowerCase();
+        // Se já existe uma recorrente/parcelamento com a mesma descrição já
+        // ativa nesse mês, é a mesma conta em andamento — só atualizamos o
+        // valor/vencimento dela em vez de criar uma segunda cópia duplicada.
+        const activeIdx = entries.findIndex(e => e.type === 'saida' && e.desc.trim().toLowerCase() === descKey && this.isActive(e, month));
+        if (activeIdx >= 0) {
+          entries[activeIdx] = { ...entries[activeIdx], amount, dueDay: day };
+          return;
+        }
         const idx = entries.findIndex(e => e.type === 'saida' && e.desc.trim().toLowerCase() === descKey && e.month === startMonth);
         if (idx >= 0) {
           entries[idx] = { ...entries[idx], amount, installments, dueDay: day, category, recurring };
@@ -1071,6 +1087,13 @@ class Component extends DCLogic {
     const editingIsSplittable = !!editingOriginal && (editingOriginal.category === 'parcelamento' || (editingOriginal.category !== 'parcelamento' && editingOriginal.recurring));
     const showSimpleDelete = isEditing && !editingIsSplittable;
     const showSplitDelete = isEditing && editingIsSplittable;
+    // Em recorrentes/parceladas o mês do formulário decide onde a edição
+    // "divide" o lançamento (fixado no mês em que você abriu a edição) — não
+    // deixamos mudar à toa pra não dividir no mês errado sem querer.
+    const monthFieldLocked = editingIsSplittable;
+    const monthFieldStyle = monthFieldLocked
+      ? 'width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text-muted); font-size:0.85rem; opacity:0.6; cursor:not-allowed;'
+      : 'width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-sunken); color:var(--text); font-size:0.85rem;';
 
     return {
       showMonthSwitcher: s.tab !== 'projecao',
@@ -1116,7 +1139,7 @@ class Component extends DCLogic {
 
       formOpen: s.formOpen,
       formTitle: isEditing ? 'Editar lançamento' : 'Novo lançamento',
-      isEditing, showSimpleDelete, showSplitDelete,
+      isEditing, showSimpleDelete, showSplitDelete, monthFieldLocked, monthFieldStyle,
       closeForm: () => this.closeForm(),
       setTypeEntrada: () => this.setTypeEntrada(), setTypeSaida: () => this.setTypeSaida(),
       typeEntradaStyle: `flex:1; text-align:center; padding:9px; border-radius:10px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer; transition:background 0.15s; background:${d.type === 'entrada' ? 'var(--success-tint)' : 'transparent'}; color:${d.type === 'entrada' ? 'var(--success)' : 'var(--text-muted)'};`,
